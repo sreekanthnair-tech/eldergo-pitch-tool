@@ -1,0 +1,2946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1E3A5F">
+<title>ElderGo Sales Tool</title>
+<style>
+/* =============================================================
+   RESET & BASE
+   ============================================================= */
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #1F2937;
+  background: #F5F7FA;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, select, textarea { font: inherit; color: inherit; }
+h1,h2,h3,h4 { font-weight: 600; line-height: 1.3; }
+
+/* =============================================================
+   DESIGN TOKENS
+   ============================================================= */
+:root {
+  --primary: #1E3A5F;
+  --primary-dark: #15263F;
+  --primary-light: #2D5A8C;
+  --accent: #F97316;
+  --accent-dark: #C2410C;
+  --success: #16A34A;
+  --success-light: #DCFCE7;
+  --warning: #D97706;
+  --warning-light: #FEF3C7;
+  --danger: #DC2626;
+  --danger-light: #FEE2E2;
+  --ink: #1F2937;
+  --ink-muted: #6B7280;
+  --ink-soft: #9CA3AF;
+  --line: #E5E7EB;
+  --line-soft: #F3F4F6;
+  --surface: #FFFFFF;
+  --surface-alt: #F9FAFB;
+  --sidebar-bg: #F3F6FA;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+  --shadow: 0 4px 16px rgba(15,30,60,.08);
+  --shadow-lg: 0 12px 40px rgba(15,30,60,.18);
+}
+
+/* =============================================================
+   LOGIN & OVERLAYS
+   ============================================================= */
+.overlay {
+  position: fixed; inset: 0;
+  background: linear-gradient(135deg, #1E3A5F 0%, #0F2440 100%);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px;
+}
+.overlay-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  width: 100%; max-width: 440px;
+  box-shadow: var(--shadow-lg);
+}
+.overlay-brand {
+  text-align: center; margin-bottom: 24px;
+}
+.overlay-brand .logo {
+  width: 56px; height: 56px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  border-radius: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: white; font-size: 24px; font-weight: 700;
+  margin-bottom: 12px;
+}
+.overlay-brand h1 {
+  font-size: 22px; color: var(--primary);
+}
+.overlay-brand p { color: var(--ink-muted); font-size: 14px; margin-top: 4px; }
+.form-row { margin-bottom: 16px; }
+.form-row label {
+  display: block; font-size: 13px; font-weight: 600;
+  color: var(--ink); margin-bottom: 6px;
+  text-transform: uppercase; letter-spacing: .03em;
+}
+.form-row input, .form-row select {
+  width: 100%; padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 16px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.form-row input:focus, .form-row select:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(45, 90, 140, .15);
+}
+.form-hint {
+  font-size: 13px; color: var(--ink-muted); margin-top: 6px;
+}
+.form-hint.warn { color: var(--warning); }
+.form-error {
+  color: var(--danger); font-size: 14px; margin-top: 8px;
+  padding: 8px 12px; background: var(--danger-light);
+  border-radius: var(--radius-sm); display: none;
+}
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  font-weight: 600; font-size: 15px;
+  transition: all .15s;
+  border: 1.5px solid transparent;
+  text-align: center;
+  min-height: 44px;
+}
+.btn-primary {
+  background: var(--primary); color: white;
+}
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:active { transform: translateY(1px); }
+.btn-accent {
+  background: var(--accent); color: white;
+}
+.btn-accent:hover { background: var(--accent-dark); }
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: #15803D; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-secondary {
+  background: var(--surface); color: var(--ink);
+  border-color: var(--line);
+}
+.btn-secondary:hover { background: var(--surface-alt); border-color: var(--ink-soft); }
+.btn-ghost {
+  background: transparent; color: var(--ink-muted);
+}
+.btn-ghost:hover { background: var(--line-soft); color: var(--ink); }
+.btn-block { width: 100%; }
+.btn-sm { padding: 8px 14px; font-size: 13px; min-height: 36px; }
+
+/* =============================================================
+   APP SHELL
+   ============================================================= */
+.app {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+.app-header {
+  background: var(--primary);
+  color: white;
+  padding: 10px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  position: sticky; top: 0; z-index: 100;
+}
+.app-header .brand {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 600; font-size: 15px;
+}
+.app-header .brand .logo-mini {
+  width: 32px; height: 32px;
+  background: rgba(255,255,255,.15);
+  border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700;
+}
+.app-header .brand .trip-tag {
+  font-size: 12px; font-weight: 500; opacity: .8;
+  padding: 3px 8px; background: rgba(255,255,255,.12);
+  border-radius: 20px;
+  margin-left: 4px;
+}
+.app-header .header-actions { display: flex; gap: 8px; }
+.app-header .header-actions .btn {
+  min-height: 36px; padding: 6px 14px; font-size: 13px;
+}
+.app-header .header-actions .btn-secondary {
+  background: rgba(255,255,255,.12);
+  color: white; border-color: transparent;
+}
+.app-header .header-actions .btn-secondary:hover {
+  background: rgba(255,255,255,.22);
+}
+.app-header .header-actions .btn-ghost {
+  color: rgba(255,255,255,.85);
+}
+.app-header .header-actions .btn-ghost:hover {
+  background: rgba(255,255,255,.12); color: white;
+}
+
+/* Call timer pill */
+.call-meta {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px;
+}
+.call-timer {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  background: rgba(255,255,255,.15);
+  padding: 4px 10px; border-radius: 20px;
+  font-weight: 500;
+}
+
+/* =============================================================
+   MAIN LAYOUT: content + sidebar
+   ============================================================= */
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 0;
+  max-width: 100%;
+}
+@media (max-width: 960px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+/* =============================================================
+   CONTENT AREA
+   ============================================================= */
+.content {
+  padding: 28px 32px 48px;
+  max-width: 920px;
+  width: 100%;
+  margin: 0 auto;
+}
+.screen-head {
+  margin-bottom: 22px;
+}
+.breadcrumb {
+  font-size: 12px; color: var(--ink-muted);
+  letter-spacing: .06em; text-transform: uppercase;
+  font-weight: 600; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+}
+.breadcrumb .dot { width: 4px; height: 4px; background: var(--ink-soft); border-radius: 50%; }
+.screen-title {
+  font-size: 26px; color: var(--primary);
+  font-weight: 700; line-height: 1.2;
+}
+@media (max-width: 640px) {
+  .content { padding: 20px 16px 32px; }
+  .screen-title { font-size: 22px; }
+}
+
+/* Talk track card */
+.talk-track {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 24px 26px;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--primary);
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--ink);
+}
+.talk-track p { margin-bottom: 14px; }
+.talk-track p:last-child { margin-bottom: 0; }
+.talk-track .say {
+  display: block;
+  padding: 14px 18px;
+  background: #F0F6FD;
+  border-radius: var(--radius);
+  margin-bottom: 14px;
+  color: var(--primary-dark);
+  font-weight: 500;
+  font-style: italic;
+  position: relative;
+}
+.talk-track .say::before {
+  content: "“";
+  position: absolute;
+  top: 4px; left: 8px;
+  font-size: 32px;
+  color: var(--primary-light);
+  opacity: .4;
+  font-family: Georgia, serif;
+  line-height: 1;
+}
+.talk-track .say-content { padding-left: 18px; }
+.talk-track .note {
+  display: block; padding: 10px 14px;
+  background: var(--warning-light);
+  border-left: 3px solid var(--warning);
+  border-radius: var(--radius-sm);
+  color: #78350F;
+  font-size: 15px;
+  margin-bottom: 14px;
+}
+.talk-track .note strong { color: #78350F; }
+.talk-track .branch {
+  padding: 10px 14px;
+  background: var(--surface-alt);
+  border-left: 3px solid var(--ink-soft);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+.talk-track .branch strong { color: var(--primary); display: block; margin-bottom: 3px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+.talk-track h3 {
+  font-size: 16px; color: var(--primary);
+  margin-bottom: 10px; margin-top: 16px;
+  font-weight: 700;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.talk-track h3:first-child { margin-top: 0; }
+.talk-track ul { margin-left: 20px; margin-bottom: 12px; }
+.talk-track ul li { margin-bottom: 6px; }
+.talk-track .pause {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #1F2937;
+  color: white;
+  font-size: 12px; font-weight: 700;
+  border-radius: 20px;
+  letter-spacing: .06em;
+  margin: 0 4px;
+}
+.talk-track .highlight-price {
+  background: #FFF7ED;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  color: var(--accent-dark);
+}
+.checkpoint-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: var(--success-light);
+  color: #166534;
+  border-radius: 20px;
+  font-size: 13px; font-weight: 600;
+  margin-top: 14px;
+}
+.checkpoint-badge.multi { margin-right: 6px; }
+.checkpoint-badge::before { content: "✓"; font-weight: 700; }
+
+/* Decision prompt card */
+.decision-card {
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+}
+.decision-card .q {
+  font-size: 19px; font-weight: 600;
+  color: var(--primary); margin-bottom: 6px;
+}
+.decision-card .q-sub {
+  color: var(--ink-muted); font-size: 14px;
+}
+
+/* Outcome confirmation card */
+.confirm-card {
+  background: var(--success-light);
+  border: 2px solid var(--success);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.confirm-card.warn { background: var(--warning-light); border-color: var(--warning); }
+.confirm-card .icon {
+  font-size: 42px; margin-bottom: 6px;
+}
+.confirm-card h3 {
+  font-size: 22px; color: #14532D; margin-bottom: 6px;
+}
+.confirm-card.warn h3 { color: #78350F; }
+.confirm-card p { color: var(--ink); font-size: 15px; }
+
+/* Button row */
+.btn-row {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin-top: 20px;
+}
+.btn-row .btn { flex: 1 1 200px; min-width: 160px; }
+.btn-row.stack .btn { flex: 1 1 100%; }
+@media (max-width: 640px) {
+  .btn-row .btn { flex: 1 1 100%; }
+}
+
+/* Nav row */
+.nav-row {
+  display: flex; justify-content: space-between;
+  margin-top: 24px; padding-top: 16px;
+  border-top: 1px solid var(--line);
+  gap: 10px;
+}
+
+/* =============================================================
+   SIDEBAR
+   ============================================================= */
+.sidebar {
+  background: var(--sidebar-bg);
+  border-left: 1px solid var(--line);
+  padding: 20px 18px;
+  overflow-y: auto;
+  position: sticky;
+  top: 56px;
+  max-height: calc(100vh - 56px);
+}
+@media (max-width: 960px) {
+  .sidebar {
+    position: static; max-height: none;
+    border-left: none; border-top: 1px solid var(--line);
+    padding: 16px;
+  }
+}
+.sb-section {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.sb-section h4 {
+  font-size: 11px; color: var(--ink-muted);
+  text-transform: uppercase; letter-spacing: .08em;
+  margin-bottom: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sb-customer .name {
+  font-size: 16px; font-weight: 700; color: var(--primary);
+}
+.sb-customer .city {
+  font-size: 13px; color: var(--ink-muted);
+  margin-top: 2px;
+}
+.sb-inputs label {
+  display: block; margin-bottom: 10px;
+}
+.sb-inputs label:last-child { margin-bottom: 0; }
+.sb-inputs .lbl {
+  font-size: 12px; color: var(--ink-muted);
+  font-weight: 500; margin-bottom: 4px;
+  display: block;
+}
+.sb-inputs input, .sb-inputs select {
+  width: 100%; padding: 8px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500;
+  background: var(--surface);
+}
+.sb-inputs input:focus, .sb-inputs select:focus {
+  outline: none; border-color: var(--primary-light);
+  box-shadow: 0 0 0 2px rgba(45,90,140,.12);
+}
+.sb-totals { font-size: 13px; }
+.sb-totals .row {
+  display: flex; justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--line-soft);
+}
+.sb-totals .row:last-child { border-bottom: none; }
+.sb-totals .row .lbl { color: var(--ink-muted); font-weight: 500; }
+.sb-totals .row .val { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.sb-totals .row.emphasis .lbl { color: var(--primary); font-weight: 700; }
+.sb-totals .row.emphasis .val { color: var(--accent-dark); font-weight: 800; font-size: 15px; }
+.sb-totals .row.saved .val { color: var(--success); }
+.sb-cps { display: flex; flex-direction: column; gap: 4px; }
+.cp-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; line-height: 1.35;
+  cursor: pointer;
+  transition: background .12s;
+  user-select: none;
+}
+.cp-item:hover { background: var(--surface-alt); }
+.cp-item input[type="checkbox"] {
+  margin-top: 3px; cursor: pointer;
+  width: 15px; height: 15px;
+  accent-color: var(--success);
+  flex-shrink: 0;
+}
+.cp-item .cp-num {
+  color: var(--ink-muted); font-weight: 700;
+  font-size: 11px; flex-shrink: 0;
+  width: 16px;
+}
+.cp-item.checked { color: var(--ink-muted); }
+.cp-item.checked .cp-text { text-decoration: line-through; }
+.sb-note {
+  font-size: 12px; color: var(--ink-muted);
+  line-height: 1.5;
+  padding: 10px 12px;
+  background: #FFF7ED;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent);
+}
+
+/* Progress bar */
+.progress-bar {
+  height: 6px; background: var(--line-soft);
+  border-radius: 3px; overflow: hidden;
+  margin-bottom: 14px;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--success) 0%, #22C55E 100%);
+  transition: width .3s;
+}
+
+/* =============================================================
+   OBJECTION FAB + PANEL
+   ============================================================= */
+.fab {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: var(--accent); color: white;
+  padding: 14px 20px;
+  border-radius: 999px;
+  font-weight: 700; font-size: 14px;
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+  z-index: 90;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: transform .15s;
+}
+.fab:hover { transform: translateY(-2px); }
+.fab:active { transform: translateY(0); }
+.fab .fab-icon {
+  width: 22px; height: 22px;
+  background: rgba(255,255,255,.2);
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+@media (max-width: 640px) {
+  .fab { bottom: 16px; right: 16px; padding: 12px 16px; font-size: 13px; }
+}
+
+.slide-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 100%; max-width: 520px;
+  background: var(--surface);
+  box-shadow: -12px 0 40px rgba(0,0,0,.15);
+  z-index: 200;
+  transform: translateX(100%);
+  transition: transform .22s cubic-bezier(.4,0,.2,1);
+  display: flex; flex-direction: column;
+}
+.slide-panel.open { transform: translateX(0); }
+.slide-panel-header {
+  padding: 16px 20px;
+  background: var(--primary);
+  color: white;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.slide-panel-header h3 {
+  font-size: 17px;
+  display: flex; align-items: center; gap: 10px;
+}
+.slide-panel-header .close-btn {
+  width: 34px; height: 34px;
+  background: rgba(255,255,255,.12);
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: white; font-size: 18px;
+  transition: background .12s;
+}
+.slide-panel-header .close-btn:hover { background: rgba(255,255,255,.22); }
+.slide-panel-body {
+  flex: 1; overflow-y: auto;
+  padding: 18px 20px;
+}
+.panel-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.4);
+  z-index: 180;
+  display: none;
+}
+.panel-backdrop.show { display: block; }
+
+/* Objection list */
+.obj-cat {
+  margin-bottom: 20px;
+}
+.obj-cat-label {
+  font-size: 11px; color: var(--ink-muted);
+  text-transform: uppercase; letter-spacing: .08em;
+  font-weight: 700; margin-bottom: 8px;
+  padding: 0 4px;
+}
+.obj-item {
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  background: var(--surface-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 12px;
+  transition: all .12s;
+}
+.obj-item:hover {
+  background: #F0F6FD;
+  border-color: var(--primary-light);
+  transform: translateX(2px);
+}
+.obj-item .obj-num {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  background: var(--primary); color: white;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+.obj-item .obj-text { flex: 1; font-size: 14px; font-weight: 500; }
+.obj-item .obj-arrow { color: var(--ink-soft); font-size: 18px; }
+
+/* Objection detail view */
+.obj-detail .back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--primary); font-weight: 600; font-size: 14px;
+  margin-bottom: 16px;
+  padding: 6px 0;
+}
+.obj-detail .obj-header {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.obj-detail .obj-header h2 {
+  font-size: 20px; color: var(--primary);
+  margin-bottom: 4px;
+}
+.obj-detail .obj-meta {
+  font-size: 12px; color: var(--ink-muted);
+  display: flex; gap: 8px; align-items: center;
+}
+.obj-detail .obj-meta .tag {
+  background: var(--line-soft); padding: 2px 8px;
+  border-radius: 12px; font-weight: 600;
+}
+.obj-block {
+  margin-bottom: 18px;
+}
+.obj-block h4 {
+  font-size: 12px; color: var(--ink-muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 8px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.obj-block h4::before {
+  content: ""; width: 3px; height: 14px;
+  background: var(--accent); border-radius: 2px;
+}
+.obj-block ul { margin-left: 18px; font-size: 14px; }
+.obj-block ul li { margin-bottom: 4px; }
+.obj-block .says-box {
+  background: var(--surface-alt);
+  padding: 12px 14px; border-radius: var(--radius-sm);
+  font-size: 14px; color: var(--ink);
+}
+.obj-block .mean-box {
+  padding: 10px 14px;
+  background: #FFF7ED; border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 14px; color: #7C2D12;
+  line-height: 1.5;
+}
+.obj-block .response-box {
+  background: #F0F6FD; border-left: 3px solid var(--primary);
+  padding: 14px 16px; border-radius: var(--radius-sm);
+  color: var(--primary-dark); font-size: 15px; line-height: 1.6;
+}
+.obj-block .response-box p { margin-bottom: 10px; }
+.obj-block .response-box p:last-child { margin-bottom: 0; }
+.obj-block .response-box .sub {
+  font-size: 13px; color: var(--ink); font-weight: 600;
+  margin-top: 8px; margin-bottom: 4px;
+  padding: 6px 10px;
+  background: rgba(30, 58, 95, .08);
+  border-radius: 4px;
+  display: block;
+}
+.obj-block .donot-box {
+  background: var(--danger-light);
+  padding: 10px 14px; border-radius: var(--radius-sm);
+  font-size: 14px; color: #7F1D1D;
+}
+.obj-block .donot-box ul { margin-left: 20px; margin-top: 4px; }
+.obj-block .wa-box {
+  position: relative;
+  background: #F0FDF4;
+  padding: 14px 16px; border-radius: var(--radius);
+  font-size: 13px; color: var(--ink);
+  white-space: pre-wrap;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.55;
+  border: 1px solid #BBF7D0;
+}
+.obj-block .copy-btn {
+  position: absolute; top: 10px; right: 10px;
+  padding: 4px 10px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 12px; font-weight: 600;
+  color: var(--ink);
+  transition: all .12s;
+}
+.obj-block .copy-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+.obj-block .copy-btn.copied { background: var(--success); color: white; border-color: var(--success); }
+
+/* =============================================================
+   CRM NOTE GENERATOR (inline in Close screen)
+   ============================================================= */
+.crm-note {
+  background: var(--surface);
+  border: 2px dashed var(--primary-light);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-top: 16px;
+}
+.crm-note h3 {
+  font-size: 14px; color: var(--primary);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.crm-note .form-row { margin-bottom: 12px; }
+.crm-note label .lbl {
+  font-size: 12px; color: var(--ink); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .04em;
+  margin-bottom: 4px; display: block;
+}
+.crm-note input, .crm-note select, .crm-note textarea {
+  width: 100%; padding: 8px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  background: var(--surface);
+}
+.crm-note textarea {
+  resize: vertical; min-height: 60px;
+  font-family: inherit;
+}
+.crm-note .preview {
+  background: #1F2937;
+  color: #E5E7EB;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  margin-top: 10px;
+  line-height: 1.6;
+  position: relative;
+}
+.crm-note .copy-btn-inline {
+  margin-top: 10px;
+}
+
+/* =============================================================
+   BANK DETAILS BOX
+   ============================================================= */
+.bank-details {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-top: 14px;
+  font-size: 14px;
+}
+.bank-details h4 {
+  font-size: 13px; color: #166534;
+  text-transform: uppercase; letter-spacing: .04em;
+  margin-bottom: 10px;
+}
+.bank-details .row {
+  display: flex; gap: 10px;
+  padding: 4px 0;
+  border-bottom: 1px dashed #BBF7D0;
+}
+.bank-details .row:last-child { border-bottom: none; }
+.bank-details .row .lbl { color: var(--ink-muted); min-width: 100px; font-weight: 500; }
+.bank-details .row .val { color: var(--ink); font-weight: 600; word-break: break-word; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 90px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #1F2937; color: white;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  font-size: 14px; font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 1100;
+  opacity: 0; transition: all .22s;
+  pointer-events: none;
+}
+.toast.show {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+}
+
+/* Resume banner */
+.resume-banner {
+  background: #FFF7ED; border: 1.5px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap;
+}
+.resume-banner .msg { flex: 1; min-width: 200px; }
+.resume-banner .msg strong { color: var(--primary); display: block; margin-bottom: 2px; }
+.resume-banner .msg span { color: var(--ink-muted); font-size: 13px; }
+.resume-banner .actions { display: flex; gap: 8px; }
+
+/* Hide classes */
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     LOGIN OVERLAY
+     ============================================================ -->
+<div id="loginOverlay" class="overlay">
+  <div class="overlay-card">
+    <div class="overlay-brand">
+      <div class="logo">EG</div>
+      <h1>ElderGo Sales Tool</h1>
+      <p>Sign in to continue</p>
+    </div>
+    <form id="loginForm">
+      <div class="form-row">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" autocomplete="current-password" required>
+      </div>
+      <div id="loginError" class="form-error">Incorrect password. Please try again.</div>
+      <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     SETUP OVERLAY (new call)
+     ============================================================ -->
+<div id="setupOverlay" class="overlay hidden">
+  <div class="overlay-card" style="max-width: 520px;">
+    <div class="overlay-brand">
+      <div class="logo">EG</div>
+      <h1>Start New Call</h1>
+      <p id="setupTripLine">Bhutan — 7 May 2026</p>
+    </div>
+    <form id="setupForm">
+      <div class="form-row">
+        <label for="customerName">Customer Name</label>
+        <input type="text" id="customerName" placeholder="From TeleCRM" required>
+      </div>
+      <div class="form-row">
+        <label for="customerCity">Customer City</label>
+        <select id="customerCity" required>
+          <option value="">Select city…</option>
+          <option value="Bangalore">Bangalore</option>
+          <option value="Delhi">Delhi</option>
+          <option value="Mumbai">Mumbai</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="flightPrice">Flight price per person (₹)</label>
+        <input type="number" id="flightPrice" min="0" step="500" required>
+        <div id="flightHint" class="form-hint"></div>
+      </div>
+      <div class="form-row">
+        <label for="paxCount">Number of Travelers</label>
+        <select id="paxCount" required>
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+        </select>
+      </div>
+      <div class="btn-row" style="margin-top: 8px;">
+        <button type="button" id="setupBack" class="btn btn-ghost">Cancel</button>
+        <button type="submit" class="btn btn-accent">Start Call →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     RESUME PROMPT OVERLAY
+     ============================================================ -->
+<div id="resumeOverlay" class="overlay hidden">
+  <div class="overlay-card" style="max-width: 480px;">
+    <div class="overlay-brand">
+      <div class="logo" style="background: linear-gradient(135deg, #F97316 0%, #FBBF24 100%);">⏸</div>
+      <h1>Resume Previous Call?</h1>
+      <p>An in-progress call was saved on this device.</p>
+    </div>
+    <div id="resumeDetails" style="background: var(--surface-alt); padding: 14px; border-radius: var(--radius); margin-bottom: 20px; font-size: 14px;"></div>
+    <div class="btn-row">
+      <button type="button" id="resumeDiscard" class="btn btn-ghost">Start Fresh</button>
+      <button type="button" id="resumeContinue" class="btn btn-primary">Resume Call</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MAIN APP
+     ============================================================ -->
+<div id="app" class="app hidden">
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo-mini">EG</div>
+      <span>ElderGo Sales Tool</span>
+      <span class="trip-tag" id="tripTag">Bhutan · 7 May</span>
+    </div>
+    <div class="call-meta">
+      <span class="call-timer" id="callTimer">00:00</span>
+    </div>
+    <div class="header-actions">
+      <button id="newCallBtn" class="btn btn-secondary" title="New Call">↻ New Call</button>
+      <button id="logoutBtn" class="btn btn-ghost" title="Logout">Logout</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <main class="content">
+      <div id="resumeBanner" class="resume-banner hidden">
+        <div class="msg">
+          <strong>Call in progress</strong>
+          <span id="resumeBannerText">Auto-saved just now</span>
+        </div>
+      </div>
+
+      <div id="progressWrap">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <div class="screen-head">
+        <div class="breadcrumb" id="breadcrumb">
+          <span>Section 1</span><span class="dot"></span><span id="stepLabel">Step 1</span>
+        </div>
+        <h1 class="screen-title" id="screenTitle">Loading…</h1>
+      </div>
+
+      <div id="screenBody"></div>
+
+      <div class="nav-row">
+        <button id="backBtn" class="btn btn-ghost">← Back</button>
+        <button id="restartBtn" class="btn btn-ghost btn-sm">Start Over</button>
+      </div>
+    </main>
+
+    <aside class="sidebar">
+      <div class="sb-section sb-customer">
+        <h4>Customer</h4>
+        <div class="name" id="sbName">—</div>
+        <div class="city" id="sbCity">—</div>
+      </div>
+
+      <div class="sb-section sb-inputs">
+        <h4>Inputs (live)</h4>
+        <label>
+          <span class="lbl">Flight per person</span>
+          <input type="number" id="sbFlight" min="0" step="500">
+        </label>
+        <label>
+          <span class="lbl">Travelers</span>
+          <select id="sbPax">
+            <option value="1">1</option>
+            <option value="2">2</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="sb-section sb-totals">
+        <h4>Totals</h4>
+        <div class="row"><span class="lbl">Land — regular</span><span class="val" id="tLandReg">—</span></div>
+        <div class="row"><span class="lbl">Grand total — regular</span><span class="val" id="tGrandReg">—</span></div>
+        <div class="row"><span class="lbl">Land — early bird</span><span class="val" id="tLandEB">—</span></div>
+        <div class="row emphasis"><span class="lbl">Grand total — EB</span><span class="val" id="tGrandEB">—</span></div>
+        <div class="row saved"><span class="lbl">EB savings</span><span class="val" id="tSavings">—</span></div>
+        <div class="row"><span class="lbl">Complimentary value</span><span class="val" id="tComp">—</span></div>
+        <div class="row emphasis saved"><span class="lbl">Total benefits</span><span class="val" id="tBenefits">—</span></div>
+      </div>
+
+      <div class="sb-section">
+        <h4>Checkpoints <span id="cpCount" style="color: var(--success); font-weight: 700;">0/10</span></h4>
+        <div class="sb-cps" id="cpList"></div>
+      </div>
+
+      <div class="sb-section" style="background: transparent; box-shadow: none; padding: 4px 0;">
+        <div class="sb-note">
+          <strong>After every call — CRM note:</strong><br>
+          Call Type · Concern · What They Said · Personal
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Objection helper FAB -->
+  <button id="objectionFab" class="fab">
+    <span class="fab-icon">🛡</span>
+    <span>Objections</span>
+  </button>
+
+  <!-- Objection slide-out panel -->
+  <div id="panelBackdrop" class="panel-backdrop"></div>
+  <div id="objectionPanel" class="slide-panel">
+    <div class="slide-panel-header">
+      <h3 id="panelTitle"><span>🛡</span> Objection Playbook</h3>
+      <button class="close-btn" id="panelClose" title="Close">✕</button>
+    </div>
+    <div class="slide-panel-body" id="panelBody"></div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">Copied</div>
+</div>
+
+<script>
+/* =============================================================
+   TRIP CONFIG — Edit this object to switch trips
+   ============================================================= */
+const TRIP = {
+  code: "BHU-MAY-2026",
+  destination: "Bhutan",
+  tagline: "Land of Happiness, Hills and Heritage",
+  departureDate: "7 May 2026",
+  departureDateShort: "7 May",
+  duration: "8 Days / 7 Nights",
+  duration_days: 8,
+  duration_nights: 7,
+  groupSize: 20,
+  minAge: 55,
+  route: "Bagdogra → Phuentsholing → Thimphu → Punakha → Paro → Phuentsholing → Bagdogra",
+
+  pricing: {
+    landRegular: 77000,
+    landEarlyBird: 72000,
+    earlyBirdDiscount: 5000,
+    earlyBirdSeats: 10,
+    bookingAdvance: 10000,
+    perDayCost: 9600,
+    installments: 3,
+    lastInstallmentDays: 21
+  },
+
+  complimentary: [
+    { name: "Traditional Bhutanese hot stone bath", value: 3500 },
+    { name: "Bhutanese farmhouse experience with butter tea and local wine", value: 2500 }
+  ],
+
+  // Default flight prices by city
+  flightPrices: {
+    "Bangalore": 25000,
+    "Delhi": 20000,
+    "Mumbai": 41000,
+    "Other": null
+  },
+
+  // Passport/visa
+  passportNote: "For Bhutan, Indian citizens do not need a passport. You can travel with just your Voter ID.",
+
+  // Company bank details for booking
+  bank: {
+    name: "Axis Bank — Corporate Current Account",
+    account: "Eldaura Senior Adventures Private Limited",
+    number: "925020003767362",
+    ifsc: "UTIB0000694"
+  },
+
+  // Hotels / accommodation summary
+  accommodation: "4-star and premium 3-star hotels",
+  nightsBreakdown: "2 nights Phuentsholing, 2 nights Thimphu, 1 night Punakha, 2 nights Paro",
+
+  // Inclusions list
+  inclusions: [
+    "7 nights in 4-star and premium 3-star hotels",
+    "Breakfast, lunch, and dinner on every single day",
+    "A certified Bhutanese cultural guide — required by Bhutan law",
+    "The Sustainable Development Fee — ₹6,000 per person (every visitor to Bhutan pays this)",
+    "A first-aid trained tour manager from India who travels with you the entire trip",
+    "Comfortable AC transport throughout",
+    "All entry tickets to every location",
+    "A Bhutanese SIM card so you are always connected",
+    "GST and service charges — everything covered"
+  ]
+};
+
+/* Derived values */
+TRIP.complimentaryTotalValue = TRIP.complimentary.reduce((s,c) => s + c.value, 0);
+TRIP.totalBenefits = TRIP.pricing.earlyBirdDiscount + TRIP.complimentaryTotalValue;
+
+/* =============================================================
+   AUTH — SHA-256 login
+   ============================================================= */
+// SHA-256 of "eldergo2026"
+const PASSWORD_HASH = "953e9a4d5175ddec731432c296a4fbbb044f810ccb05044cf4af5c73efd42e0d";
+const AUTH_KEY = "eldergo_auth_v1";
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* =============================================================
+   UTILITIES
+   ============================================================= */
+function formatINR(num) {
+  if (num == null || isNaN(num)) return "—";
+  const rounded = Math.round(num);
+  const str = rounded.toString();
+  const lastThree = str.slice(-3);
+  const other = str.slice(0, -3);
+  if (other === "") return "₹" + lastThree;
+  return "₹" + other.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + "," + lastThree;
+}
+function pad2(n) { return n < 10 ? "0" + n : n.toString(); }
+function fmtTime(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  if (m >= 60) {
+    const h = Math.floor(m / 60);
+    return h + ":" + pad2(m % 60) + ":" + pad2(s);
+  }
+  return pad2(m) + ":" + pad2(s);
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._tm);
+  toast._tm = setTimeout(() => t.classList.remove("show"), 1800);
+}
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text).then(() => true).catch(() => fallbackCopy(text));
+  }
+  return Promise.resolve(fallbackCopy(text));
+}
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch(e) {}
+  document.body.removeChild(ta);
+  return ok;
+}
+
+/* =============================================================
+   STATE MANAGEMENT
+   ============================================================= */
+const STATE_KEY = "eldergo_call_v1";
+let state = null;
+
+function freshState() {
+  return {
+    tripCode: TRIP.code,
+    customer: { name: "", city: "", flightPrice: 0, pax: 2 },
+    currentScreen: "s1_intro",
+    history: [],
+    checkpoints: {},     // { 1: true, 2: false, ... }
+    callStartedAt: Date.now(),
+    outcome: null,
+    crmNote: { callType: "First Call", concern: "None", whatTheySaid: "", personal: "" },
+    lastSavedAt: Date.now()
+  };
+}
+
+function saveState() {
+  if (!state) return;
+  state.lastSavedAt = Date.now();
+  try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+function clearState() {
+  try { localStorage.removeItem(STATE_KEY); } catch(e) {}
+  state = null;
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // Invalidate if trip code differs from current config
+    if (parsed.tripCode !== TRIP.code) return null;
+    return parsed;
+  } catch(e) { return null; }
+}
+
+/* =============================================================
+   PITCH CONTENT — all talk track screens
+   ============================================================= */
+/*
+  Each screen returns HTML string. Placeholders used:
+    {{name}}, {{flight}}, {{pax}}, {{landReg}}, {{landEB}}, {{grandReg}},
+    {{grandEB}}, {{ebDiscount}}, {{benefitsPP}}, {{benefitsCouple}},
+    {{compValue}}, {{perDay}}, {{advance}}, {{ebSeats}}, {{groupSize}},
+    {{duration}}, {{dateShort}}, {{destination}}, {{passportLine}},
+    {{nightsBreakdown}}
+*/
+
+function renderPlaceholders(html) {
+  const c = state.customer;
+  const pax = c.pax || 1;
+  const flight = c.flightPrice || 0;
+  const name = c.name ? c.name : "";
+  const landReg = TRIP.pricing.landRegular;
+  const landEB = TRIP.pricing.landEarlyBird;
+  const grandReg = landReg + flight;
+  const grandEB = landEB + flight;
+
+  // "Namaste X Sir/Ma'am" -- if name present, include it
+  const nameSalutation = name ? escapeHtml(name) + " " : "";
+
+  return html
+    .replace(/\{\{nameSalutation\}\}/g, nameSalutation)
+    .replace(/\{\{name\}\}/g, escapeHtml(name || ""))
+    .replace(/\{\{flight\}\}/g, formatINR(flight))
+    .replace(/\{\{pax\}\}/g, pax.toString())
+    .replace(/\{\{landReg\}\}/g, formatINR(landReg))
+    .replace(/\{\{landEB\}\}/g, formatINR(landEB))
+    .replace(/\{\{grandReg\}\}/g, formatINR(grandReg))
+    .replace(/\{\{grandEB\}\}/g, formatINR(grandEB))
+    .replace(/\{\{ebDiscount\}\}/g, formatINR(TRIP.pricing.earlyBirdDiscount))
+    .replace(/\{\{benefitsPP\}\}/g, formatINR(TRIP.totalBenefits))
+    .replace(/\{\{benefitsCouple\}\}/g, formatINR(TRIP.totalBenefits * 2))
+    .replace(/\{\{compValue\}\}/g, formatINR(TRIP.complimentaryTotalValue))
+    .replace(/\{\{perDay\}\}/g, formatINR(TRIP.pricing.perDayCost))
+    .replace(/\{\{advance\}\}/g, formatINR(TRIP.pricing.bookingAdvance))
+    .replace(/\{\{ebSeats\}\}/g, TRIP.pricing.earlyBirdSeats.toString())
+    .replace(/\{\{groupSize\}\}/g, TRIP.groupSize.toString())
+    .replace(/\{\{duration\}\}/g, TRIP.duration)
+    .replace(/\{\{dateShort\}\}/g, TRIP.departureDateShort)
+    .replace(/\{\{destination\}\}/g, TRIP.destination)
+    .replace(/\{\{passportLine\}\}/g, TRIP.passportNote)
+    .replace(/\{\{nightsBreakdown\}\}/g, TRIP.nightsBreakdown);
+}
+
+/* =============================================================
+   CHECKPOINTS
+   ============================================================= */
+const CHECKPOINTS = [
+  { id: 1, label: "Permission + language confirmed" },
+  { id: 2, label: "Price delivered with context" },
+  { id: 3, label: "Travel history understood" },
+  { id: 4, label: "Health concern asked" },
+  { id: 5, label: "ElderGo story delivered" },
+  { id: 6, label: "Repeat rate mentioned (7 out of 10)" },
+  { id: 7, label: "Testimonial videos committed" },
+  { id: 8, label: "At least 2 Bhutan moments shared" },
+  { id: 9, label: "Price with inclusions delivered" },
+  { id: 10, label: "Clear outcome" }
+];
+
+/* =============================================================
+   OBJECTIONS — all 21
+   ============================================================= */
+const OBJECTIONS = [
+  {
+    id: 1, title: "Not the right time / busy", category: "Exit", freq: "1,363 mentions",
+    says: ["I'm driving right now", "I'm busy, call me later", "This is not a good time", "Call me next week"],
+    means: "Two possibilities — genuinely busy (30–40%) or want to get rid of you (60–70%). Figure out which in 10 seconds.",
+    response: `<p><span class="sub">Opener</span><em>“No problem at all, Sir/Ma'am. I will not take your time right now. Just one quick thing — are you still interested in the Bhutan trip, or should I not disturb you again?”</em></p>
+<p><span class="sub">If genuinely busy</span><em>“No problem. When is a good time — morning or evening? And which day?”</em> → Get specific day + time.</p>
+<p><span class="sub">If "don't call again"</span><em>“Understood, Sir/Ma'am. I will not call again. But I will send you our Bhutan trip details on WhatsApp — just in case. No pressure.”</em> → Send WhatsApp, mark Cold.</p>`,
+    donots: null,
+    whatsapp: `Namaste [Name] Sir/Ma'am,
+
+This is [Rep Name] from ElderGo Senior Tours, Bangalore.
+
+Sorry I caught you at a busy time. I am sharing our Bhutan trip details for whenever you are free.
+
+📎 [Itinerary PDF]
+
+I will call you on [day] at [time] as we discussed.
+
+[Rep Name]
+ElderGo Senior Tours
+📞 [Number]`
+  },
+  {
+    id: 2, title: "Not interested (no reason)", category: "Exit", freq: "657 mentions",
+    says: ["I'm not interested", "No thanks", "Not for me"],
+    means: "80% reflex reaction. They haven't given a reason — there IS one they haven't shared.",
+    response: `<p><em>“I understand, Sir/Ma'am. May I just ask — is it that you are not planning to travel right now, or is it something about this particular trip?”</em></p>
+<p><span class="sub">If "not planning now"</span><em>“No problem. Can I send you one short video of how our senior travelers enjoyed Bhutan? Just so you know what we do.”</em> → If yes, send video, mark WJFT.</p>
+<p><span class="sub">If they give a specific reason</span>Handle with the relevant objection from this playbook.</p>
+<p><span class="sub">If shut down again</span><em>“No problem, Sir/Ma'am. Thank you for your time.”</em> → Mark Lost. Send one WhatsApp anyway.</p>`,
+    donots: null,
+    whatsapp: `Namaste [Name] Sir/Ma'am,
+
+This is [Rep Name] from ElderGo Senior Tours.
+
+Here is a short video from our recent Bhutan trip.
+
+🎥 [Testimonial video]
+
+If you ever plan a trip, just reply here anytime.
+
+Thank you!`
+  },
+  {
+    id: 3, title: "Discuss with family / children", category: "Family", freq: "544 mentions",
+    says: ["Let me talk to my son/daughter", "My children need to check", "My son handles finances"],
+    means: "For Indian seniors, almost always genuine. Adult children involved ~70% of the time. Child worries about safety, money, legitimacy.",
+    response: `<p><em>“Of course, Sir/Ma'am. Many of our travelers discuss with their family before booking.”</em></p>
+<p><em>“Would it help if I send you a detailed message on WhatsApp with all the information — pricing, what is included, safety measures, our company details? You can share it directly in your family group.”</em></p>
+<p><em>“And if your son or daughter has any questions, I am happy to speak with them directly. They can call me anytime.”</em></p>
+<p><span class="sub">If very warm, family is only blocker</span><em>“Sir/Ma'am, I can hold your seat for 3–4 days without any payment — so while you discuss, the seat does not go to someone else.”</em></p>
+<p><span class="sub">Probe gently</span><em>“Is there anything specific your children are concerned about? Sometimes I can help you explain things to them — safety measures, the tour manager, the cancellation policy.”</em></p>`,
+    donots: ["Say \"you don't need permission\"", "Ask for child's number (let them offer)", "Say \"book now, tell them later\""],
+    whatsapp: `Namaste [Name] Sir/Ma'am,
+
+Thank you for your interest in our Bhutan trip. Here are details you can share with your family:
+
+✅ *About ElderGo*
+Senior-only group tours. 15–20 travelers per group.
+15+ tours to 7 countries in the last year.
+7 out of 10 travelers come back.
+Office: BHIVE Workspace, Kudlu Gate, Bangalore.
+GSTIN: 32AAICE5592N1Z5 | www.eldergo.in
+
+✅ *Bhutan Trip — 7 May 2026*
+8 days / 7 nights | All-inclusive: ₹72,000 per person (early bird)
+Flights: ~₹25,000 per person | Total: ~₹97,000 per person
+
+✅ *Safety*
+Tour manager from India on every trip. Small group (15–20).
+4-star hotels. All meals.
+
+✅ *Cancellation*
+100% refund if cancelled 30+ days before trip.
+
+🎥 [1–2 testimonial videos]
+📎 [Itinerary PDF]
+
+If your family has questions, they can call me at [number].
+
+[Rep Name] | ElderGo Senior Tours`
+  },
+  {
+    id: 4, title: "Discuss with wife/husband", category: "Family", freq: "Part of 544",
+    says: ["Let me talk to my wife/husband", "We decide together", "My wife is not sure"],
+    means: "Co-decision making, not permission. If you get both on the next call, conversion probability doubles.",
+    response: `<p><em>“Of course, Sir/Ma'am. It is always better to decide together.”</em></p>
+<p><em>“Would it help if I call back when both of you are free? That way I can explain everything together. When would be a good time — maybe [day] morning or evening?”</em></p>
+<p><span class="sub">If they agree to joint call</span>Get specific day + time. On callback, focus on 4 moments and safety.</p>
+<p><span class="sub">If "I'll explain myself"</span><em>“No problem. I will send everything on WhatsApp — day-by-day plan, pricing, and some videos. You can go through it together.”</em></p>`,
+    donots: null,
+    whatsapp: `Namaste [Name] Sir/Ma'am,
+
+Here are details so you and your [wife/husband] can go through together:
+
+📎 [Itinerary PDF]
+🎥 [2 testimonial videos — ideally couples]
+
+Early bird: ₹72,000 per person.
+For both of you: about ₹18,000 per day for two people.
+
+I will call on [day] at [time].
+
+[Rep Name] | ElderGo Senior Tours`
+  },
+  {
+    id: 5, title: "Price is too high", category: "Budget", freq: "343 mentions",
+    says: ["₹1 lakh is too much", "Beyond my budget", "I was thinking ₹50–60K", "Can't spend this much"],
+    means: "Three situations: (A) Can afford but needs value justification, (B) Comparing to competitor, (C) Genuinely cannot afford.",
+    response: `<p><span class="sub">Clarify first</span><em>“I understand, Sir/Ma'am. May I ask — is it the total amount that feels high, or were you comparing with another package?”</em></p>
+<p><span class="sub">Situation A (total feels high)</span><em>“Let me put it this way. This is ₹9,600 per person per day. For that you get a 4-star hotel, three meals, transport, guide, everything. A good hotel room alone costs ₹5,000–6,000 per night. Also, booking advance is only ₹10,000 per person. Rest in 3 easy installments.”</em></p>
+<p><span class="sub">Situation B (comparing competitor)</span>Use the competitor reframe from the pitch.</p>
+<p><span class="sub">Situation C (genuinely cannot afford)</span><em>“If Bhutan does not fit the budget right now, we also have trips at lower price points — domestic trips starting from ₹35,000–45,000 per person. Would you like details?”</em> (Check with product team first for availability.)</p>`,
+    donots: ["Give any discount", "Say \"it's actually very cheap\"", "Push harder on same trip if they genuinely cannot afford"],
+    whatsapp: `Namaste [Name] Sir/Ma'am,
+
+Quick breakdown of what is covered in ₹72,000 per person:
+
+🏨 7 nights 4-star hotels
+🍽️ Breakfast, lunch, dinner — all days
+🚌 AC transport throughout
+👨‍✈️ Tour manager from India
+🎫 All entry tickets
+💰 Bhutan SDF fee (₹6,000 per person)
+🛁 Hot stone bath (worth ₹3,500 per person)
+🏡 Farmhouse experience (worth ₹2,500 per person)
+
+Booking advance: only ₹10,000 per person. Rest in 3 installments.
+
+📎 [Itinerary PDF]
+
+[Rep Name] | ElderGo Senior Tours`
+  },
+  {
+    id: 6, title: "Not comfortable with group / strangers", category: "Group Fear", freq: "326 mentions",
+    says: ["Don't want unknown people", "Who else is in the group?", "I don't like groups"],
+    means: "Imagining a noisy bus with 40 random people. Fear of loss of control.",
+    response: `<p><em>“I completely understand, Sir/Ma'am. Many of our travelers felt the same way before their first trip.”</em></p>
+<p><em>“Our groups are small — only 15 to 20 people. Everyone is a senior, 55 and above. No youngsters. Same age, same pace.”</em></p>
+<p><em>“30% of our travelers come alone — and they always tell us by Day 2, the group felt like old friends.”</em></p>
+<p><span class="sub">If they want private trip</span>Go to Objection #19.</p>`,
+    donots: null,
+    whatsapp: `Here is a video — see the kind of people who travel with us.
+
+🎥 [Group testimonial video]
+
+Our groups: 15–20 seniors only. Many come alone and make great friends.
+
+📎 [Itinerary PDF]`
+  },
+  {
+    id: 7, title: "Want to travel with friends", category: "Group Fear", freq: "Part of 326",
+    says: ["My friends need to agree", "If 4–5 friends say yes, I'll go"],
+    means: "Want comfort of familiar faces. But friends will keep postponing forever.",
+    response: `<p><em>“Your friends are welcome. I can call them directly, or you can forward the WhatsApp message.”</em></p>
+<p><em>“But honestly — when people wait for 4–5 friends to agree, it takes very long. What many do is join first, then tell friends. Once friends see the photos, they join the next trip.”</em></p>
+<p><span class="sub">If "let me check with friends"</span><em>“How much time — 3–4 days? I can hold [X] seats without payment until [date].”</em></p>`,
+    donots: null,
+    whatsapp: `Here are details you can share with your friends:
+
+📎 [Itinerary PDF] | 🎥 [Video]
+
+Seats limited to 20. Currently [X] available.
+
+If friends want to know more: [number]`
+  },
+  {
+    id: 8, title: "Health concerns", category: "Practical", freq: "144 mentions",
+    says: ["Knee pain, can't walk much", "Heart patient", "BP and diabetes", "Had surgery"],
+    means: "Two situations: (A) Want to travel but worried about fitness. (B) Genuine medical risk.",
+    response: `<p><span class="sub">Understand severity first</span><em>“Thank you for sharing. Your health is most important. Can you tell me more — what is the concern? Does your doctor say you can travel?”</em></p>
+<p><span class="sub">If manageable (knee, controlled BP/diabetes)</span><em>“Many of our travelers have similar concerns. No heavy climbing. Comfortable bus, regular stops. Tour manager is first-aid trained. We've had travelers 75+ complete this trip. But please check with your doctor.”</em></p>
+<p><span class="sub">If serious (recent surgery, doctor against)</span><em>“Your health comes first. We run trips every month. When your doctor gives go-ahead, call me and I will book you.”</em></p>`,
+    donots: ["Dismiss the concern", "Push against medical advice", "Guarantee medical safety"],
+    whatsapp: `Our trips are designed for senior comfort:
+
+✅ No heavy climbing
+✅ Comfortable AC bus, regular stops
+✅ Tour manager first-aid trained
+✅ Medical kit on every trip
+
+Please check with your doctor. If fit to travel, we will take full care.`
+  },
+  {
+    id: 9, title: "No passport / passport expired", category: "Practical", freq: "105 mentions",
+    says: ["Don't have passport", "Passport expired"],
+    means: "Positive signal — they're interested enough to think about logistics.",
+    response: `<p><span class="sub">For Bhutan</span><em>“That is not a problem at all. For Bhutan, Indian citizens do not need a passport. You can travel with just your Voter ID. Bhutan is one of the easiest international trips for Indians.”</em></p>
+<p><span class="sub">For other destinations</span><em>“Getting a passport is easy now. Tatkal service: 1–2 weeks. Our trip is [X weeks] away — plenty of time. I can guide you on documents needed.”</em></p>`,
+    donots: null,
+    whatsapp: `Good news — for Bhutan, Indian citizens do not need a passport.
+
+You can travel with your Voter ID.
+
+One less thing to worry about!
+
+📎 [Itinerary PDF]`
+  },
+  {
+    id: 10, title: "Trust / is this real?", category: "Trust", freq: "101 mentions",
+    says: ["How do I know you are real?", "So many scams", "Is this genuine?"],
+    means: "Afraid of sending money to strangers. Cure is PROOF.",
+    response: `<p><em>“Very fair concern, Sir/Ma'am. Let me share a few things. We are a registered company in Bangalore — BHIVE Workspace, Kudlu Gate. GST number 32AAICE5592N1Z5 — you can verify on the government portal. Website: eldergo.in.”</em></p>
+<p><em>“But the best proof is from people who traveled with us. I will send you video testimonials — real seniors sharing their experience.”</em></p>`,
+    donots: null,
+    whatsapp: `✅ *Company*
+Eldaura Senior Adventures Pvt Ltd
+Office: BHIVE Workspace, Kudlu Gate, Bangalore
+GST: 32AAICE5592N1Z5 | www.eldergo.in
+
+✅ *Bank (for verification)*
+Axis Bank — Corporate Current Account
+Account: Eldaura Senior Adventures Pvt Ltd
+(Company account, never personal)
+
+✅ *Google Reviews* [Link]
+
+🎥 [Video 1] | 🎥 [Video 2]
+📎 [Itinerary PDF]`
+  },
+  {
+    id: 11, title: "Want to visit office", category: "Trust", freq: "",
+    says: ["Can I see your office?", "I want to meet someone"],
+    means: "Trust objection in disguise. Want to confirm you are real.",
+    response: `<p><span class="sub">Bangalore customer</span><em>“Of course. BHIVE Workspace, AKR Tech Park, Kudlu Gate. Monday to Saturday, 10 AM to 6 PM. Which day works?”</em> → Get specific date.</p>
+<p><span class="sub">Non-Bangalore</span><em>“Our office is in Bangalore, so visiting may not be easy. I will send company details, office photos, and testimonials. You can check Google reviews. We can also do a short WhatsApp video call so you can see our office. Would that help?”</em></p>`,
+    donots: null,
+    whatsapp: `📍 BHIVE Workspace, Block B, AKR Tech Park
+Kudlu Gate, Bangalore - 560068
+
+🕐 Mon-Sat, 10 AM - 6 PM
+
+GST: 32AAICE5592N1Z5 | www.eldergo.in | [Google Reviews link]
+
+Not in Bangalore? We can do a WhatsApp video call.`
+  },
+  {
+    id: 12, title: "Want a local company", category: "Trust", freq: "",
+    says: ["I prefer a local company", "Don't you have an office in Delhi?"],
+    means: "Want accessibility — someone nearby if something goes wrong.",
+    response: `<p><em>“I understand. We have travelers from Delhi, Mumbai, Chennai — all across India. Everyone gets same support over phone and WhatsApp.”</em></p>
+<p><em>“And the most important thing — once the trip starts, our tour manager from India travels WITH you. A local office stays in the city while you are in Bhutan. Our person comes with you.”</em></p>`,
+    donots: null,
+    whatsapp: null
+  },
+  {
+    id: 13, title: "Dates don't work", category: "Timing", freq: "",
+    says: ["Can't travel on those dates", "Wife didn't get leave", "Available only in July"],
+    means: "Genuine scheduling conflict. NOT a rejection. They want the destination, not this departure.",
+    response: `<p><em>“No problem, Sir/Ma'am. Which month works best? I will check what trips we have.”</em></p>
+<p><span class="sub">If another batch available</span><em>“We have another Bhutan batch in [month]. Would that work?”</em></p>
+<p><span class="sub">If nothing matches</span><em>“I will note your preferred dates and call you when we announce a matching trip. Adding you to our WhatsApp community.”</em> → Mark WJFT.</p>`,
+    donots: null,
+    whatsapp: null
+  },
+  {
+    id: 14, title: "Friend hasn't confirmed", category: "Social", freq: "",
+    says: ["My friend is interested but not confirmed", "I'll only go if my friend goes"],
+    means: "Want comfort of going with someone they know. Risk: friend never confirms, lead dies.",
+    response: `<p><em>“I can call your friend directly. Would you like to share their number?”</em></p>
+<p><em>“But one suggestion — if YOU are sure, confirm your seat. If your friend also confirms, great. If not, you still have a wonderful trip. 30% of our travelers come alone.”</em></p>
+<p><span class="sub">If "only if friend goes"</span><em>“How much time — 3–4 days? I can hold 2 seats without payment until [date].”</em></p>`,
+    donots: null,
+    whatsapp: null
+  },
+  {
+    id: 15, title: "Food restrictions", category: "Practical", freq: "29 mentions",
+    says: ["Pure veg only", "Jain — no onion, no garlic", "Diabetic diet", "Will there be Indian food?"],
+    means: "Genuine practical concern. Dealbreaker if not handled.",
+    response: `<p><em>“We completely understand. On all trips, we pre-arrange Indian vegetarian meals. For Jain — no onion, no garlic. For diabetic — adjusted menu. Restaurants informed in advance.”</em></p>
+<p><em>“Bhutan is especially easy for veg travelers — strong Buddhist culture, many locals are vegetarian.”</em></p>
+<p><span class="sub">If strict (cross-contamination)</span><em>“I want to be honest — we cannot guarantee a separate kitchen internationally. But meals are cooked and served separately. Our Jain travelers have been comfortable.”</em></p>`,
+    donots: ["Promise what you cannot deliver", "Dismiss the concern", "Make it sound difficult"],
+    whatsapp: null
+  },
+  {
+    id: 16, title: "Give me a discount", category: "Budget", freq: "",
+    says: ["Can you reduce the price?", "Give some discount", "If you reduce ₹5–10K, I'll book today"],
+    means: "Cultural negotiation. They CAN afford it. Want to feel they got the best deal.",
+    response: `<p><em>“Sir/Ma'am, our prices are fixed and same for every traveler. We do not negotiate because we do not want to compromise on quality — the hotels, food, guide, tour manager.”</em></p>
+<p><em>“Right now, the early bird gives you ₹5,000 off per person. That is the maximum benefit. And 7 out of 10 travelers come back — that does not happen if value is not there.”</em></p>
+<p><span class="sub">If they push harder</span><em>“I genuinely wish I could, but pricing is fixed at company level. I do not have authority to change it. What I CAN do is make sure your experience is worth every rupee.”</em></p>`,
+    donots: ["Give any discount", "Say \"I'll check with manager\"", "Get defensive"],
+    whatsapp: null
+  },
+  {
+    id: 17, title: "Children not allowing", category: "Family", freq: "",
+    says: ["My son says not safe", "Daughter is worried about health", "Children think I should not travel"],
+    means: "Hard block. Parent wants to go. Child said no. You need to sell to the CHILD.",
+    response: `<p><em>“Your children care about you — that is wonderful. Their concern is natural.”</em></p>
+<p><em>“May I suggest — I can speak with your son/daughter directly and explain our safety measures, tour manager, medical support. Many times, children feel comfortable once they have full information.”</em></p>
+<p><em>“Would you like to share their number, or ask them to call me?”</em></p>
+<p><span class="sub">If you get child's number</span>Pitch DIFFERENTLY to the child. Focus on: company legitimacy, safety, tour manager, cancellation policy. NOT the destination.</p>
+<p><span class="sub">If medical reason</span><em>“If your children are concerned about a health condition, they may be right. Please check with your doctor first.”</em></p>`,
+    donots: null,
+    whatsapp: `For the child:
+
+Your [mother/father] is interested in our Bhutan trip. Here is safety information:
+
+✅ Tour manager from India, entire trip
+✅ First-aid trained, medical kit
+✅ Small group, 15–20 verified seniors
+✅ 100% refund if cancelled 30+ days
+
+Company: Eldaura Senior Adventures Pvt Ltd
+BHIVE Workspace, Kudlu Gate, Bangalore
+GST: 32AAICE5592N1Z5
+
+🎥 [Testimonial video]
+
+Call me at [number] with any questions.`
+  },
+  {
+    id: 18, title: "Cancellation policy / refund", category: "Buying Signal", freq: "",
+    says: ["What is cancellation policy?", "Is it refundable?", "What if I can't go?"],
+    means: "BUYING SIGNAL. People who aren't interested don't ask about cancellation.",
+    response: `<p><em>“Very good question. Our policy is simple:”</em></p>
+<p><em>“30 days or more before trip — full 100% refund on package. 21 to 30 days — 75%. 15 to 20 days — 50%. Within 15 days — no refund on package.”</em></p>
+<p><em>“Flight refund depends on airline policy — we explain options at booking.”</em></p>
+<p><em>“We also include travel insurance for travelers below 70. And if there is a last-minute emergency, we try to find a replacement — if we do, you get the refund.”</em></p>
+<p><em>“So booking now is very low risk if the trip is more than 30 days away.”</em></p>`,
+    donots: ["Be vague about the policy", "Promise things not in policy"],
+    whatsapp: null
+  },
+  {
+    id: 19, title: "Want private / custom trip", category: "Group Fear", freq: "",
+    says: ["Can you arrange just for me and my wife?", "Can you customize?"],
+    means: "Want control and flexibility. But wrong company — ElderGo does group tours only.",
+    response: `<p><em>“I understand. We specialize in group tours only — that is our strength.”</em></p>
+<p><em>“A private Bhutan trip for two people would cost ₹1.5 to ₹2 lakh per person — guide, vehicle, hotels all just for two. In our group, costs are shared. You get a 4-star experience at almost half the price.”</em></p>
+<p><em>“And what our travelers say is — the group was the best part.”</em></p>
+<p><span class="sub">If still want private</span><em>“We do not do private tours. For customized trips, check with a travel agent who specializes in that. If you ever want a group experience, we are here.”</em></p>`,
+    donots: null,
+    whatsapp: null
+  },
+  {
+    id: 20, title: "Already booked elsewhere", category: "Lost", freq: "30 mentions",
+    says: ["Already booked my trip", "Going with Thomas Cook / Veena World"],
+    means: "Deal done for this trip. But they are a potential FUTURE customer.",
+    response: `<p><em>“That is great, Sir/Ma'am! I hope you have a wonderful trip. Which company, if you don't mind?”</em></p>
+<p><span class="sub">Note competitor in CRM</span></p>
+<p><em>“Our tours are exclusively for seniors — quite different from mixed-age groups. Many travelers try other companies first, then switch to us. Can I add you to our WhatsApp community? After your trip, if you want a different experience, we would love to have you.”</em></p>`,
+    donots: ["Bad-mouth competitor", "Try to make them cancel", "Sound desperate"],
+    whatsapp: `Wonderful to hear you are going to Bhutan! Have an amazing trip.
+
+Adding you to our travelers' community.
+
+After your trip, if you want a senior-only experience, we are here.
+
+Have a safe journey!
+
+[Rep Name] | ElderGo Senior Tours`
+  },
+  {
+    id: 21, title: "I'll call you back", category: "Exit", freq: "",
+    says: ["Don't call me, I'll call you", "I have your number", "I'll reach out when ready"],
+    means: "Want to end the conversation and maintain control. Different from \"I'll think about it.\"",
+    response: `<p><em>“Of course, Sir/Ma'am. I will not call unless you want me to. But before I go — just one quick question.”</em></p>
+<p><span class="sub">If travel history unknown</span><em>“Have you traveled outside India before?”</em></p>
+<p><span class="sub">If known</span><em>“When are you planning to travel — this year or later?”</em></p>
+<p><em>“Thank you, Sir/Ma'am. I will send trip details on WhatsApp. Take your time, and whenever you feel like talking, just reply or call me. No pressure.”</em></p>
+<p><span class="sub">CRM</span>Mark Cold. ONE follow-up call after 15 days. Include in WhatsApp drip sequence.</p>`,
+    donots: null,
+    whatsapp: `Here are complete details:
+
+📎 [Itinerary PDF]
+🎥 [Video 1] | 🎥 [Video 2]
+
+📍 8 days, 7 nights — Thimphu, Punakha, Paro
+💰 ₹72,000 per person (early bird) + flights
+🏨 4-star hotels, all meals
+👨‍✈️ Tour manager from India
+🔁 7 out of 10 travelers come back
+
+No pressure. Whenever ready, reply here or call [number].
+
+[Rep Name] | ElderGo Senior Tours`
+  }
+];
+
+const OBJECTION_CATEGORIES = [
+  { name: "Exit", label: "🚪 Exit Attempts", ids: [1, 2, 21] },
+  { name: "Family", label: "👨‍👩‍👧 Family", ids: [3, 4, 17] },
+  { name: "Budget", label: "💰 Budget", ids: [5, 16] },
+  { name: "Group Fear", label: "👥 Group Fear", ids: [6, 7, 19] },
+  { name: "Practical", label: "📋 Practical", ids: [8, 9, 15] },
+  { name: "Trust", label: "🤝 Trust", ids: [10, 11, 12] },
+  { name: "Timing", label: "📅 Timing", ids: [13] },
+  { name: "Social", label: "👫 Social", ids: [14] },
+  { name: "Buying Signal", label: "🎯 Buying Signal", ids: [18] },
+  { name: "Lost", label: "❌ Lost", ids: [20] }
+];
+
+/* =============================================================
+   SCREEN DEFINITIONS
+   ============================================================= */
+
+const SCREENS = {
+
+  /* ---------- SECTION 1: OPENING ---------- */
+
+  "s1_intro": {
+    section: 1, step: "Step 1",
+    title: "Introduce Yourself",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Namaste {{nameSalutation}}Sir/Ma'am, this is [Your Name] from ElderGo Senior Tours, Bangalore. You had shown interest in our Bhutan group tour for seniors. Is this a good time to talk?</strong></div></div>
+  <div class="branch"><strong>If "not now"</strong><em>“No problem, Sir/Ma'am. When is a good time for me to call back?”</em> → Get specific day + time → Log → Call exactly then.</div>
+  <div class="branch"><strong>If "wrong number"</strong><em>“Apologies, Sir/Ma'am. Sorry for the trouble. Have a good day.”</em> → Mark junk → Move on.</div>
+</div>`,
+    buttons: [
+      { label: "Good time to talk ✓", goto: "s2_language", kind: "primary" },
+      { label: "Not now — schedule callback", goto: "s1_callback", kind: "secondary" },
+      { label: "Wrong number", goto: "s1_wrongnum", kind: "ghost" }
+    ]
+  },
+
+  "s1_callback": {
+    section: 1, step: "Schedule Callback",
+    title: "Schedule Callback",
+    body: () => `
+<div class="confirm-card warn">
+  <div class="icon">📞</div>
+  <h3>Schedule the callback</h3>
+  <p>Get the specific <strong>day AND time</strong> — not "later today". Log in TeleCRM. Set alarm. Call exactly then.</p>
+</div>
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Thank you, Sir/Ma'am. I will call you on [day] at [time]. Have a good day.</strong></div></div>
+  <h3>After the call</h3>
+  <ul>
+    <li>Update CRM status: <strong>Scheduled Callback</strong></li>
+    <li>Set callback time in TeleCRM with day + time</li>
+    <li>Send a short WhatsApp confirming the callback</li>
+  </ul>
+</div>`,
+    buttons: [
+      { label: "Confirm — End Call", goto: "s_end_callback", kind: "primary" }
+    ]
+  },
+
+  "s1_wrongnum": {
+    section: 1, step: "Wrong Number",
+    title: "Mark as Junk",
+    body: () => `
+<div class="confirm-card warn">
+  <div class="icon">🚫</div>
+  <h3>Mark lead as Junk</h3>
+  <p>In TeleCRM, set status <strong>Junk</strong>. Move on — no follow-up needed.</p>
+</div>
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Apologies, Sir/Ma'am. Sorry for the trouble. Have a good day.</strong></div></div>
+</div>`,
+    buttons: [
+      { label: "End Call", goto: "s_end_junk", kind: "primary" }
+    ]
+  },
+
+  "s2_language": {
+    section: 1, step: "Step 2",
+    title: "Language Check",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Sir/Ma'am, would you prefer Hindi or English?</strong></div></div>
+  <div class="note"><strong>Note:</strong> Switch to their preferred language for the rest of the call. Use "Sir" or "Ma'am" — never "ji".</div>
+  <div class="checkpoint-badge">Checkpoint 1 — Language confirmed</div>
+</div>`,
+    checkpoint: 1,
+    buttons: [
+      { label: "Continue →", goto: "s3_price_branch", kind: "primary" }
+    ]
+  },
+
+  "s3_price_branch": {
+    section: 1, step: "Step 3",
+    title: "Did the customer ask for price?",
+    body: () => `
+<div class="decision-card">
+  <div class="q">About 80% of seniors ask for price within the first minute.</div>
+  <div class="q-sub">Which one did this customer do?</div>
+</div>`,
+    buttons: [
+      { label: "YES — asked for price (80%)", goto: "s4_quick_pricing", kind: "primary" },
+      { label: "NO — wants to hear more (20%)", goto: "s10_travel_history", kind: "secondary" }
+    ]
+  },
+
+  "s4_quick_pricing": {
+    section: 1, step: "Flow 1 — Quick Pricing",
+    title: "Flow 1: Quick Pricing",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Sure, Sir/Ma'am. This is a completely all-inclusive package — everything from your home airport to your home airport is included. No hidden costs. Only personal shopping is extra.</strong></div></div>
+
+  <div class="say"><div class="say-content"><strong>The land package — meaning the package cost without flight charges — is <span class="highlight-price">{{landReg}}</span> per person. On top of that, we book your round-trip flights also. The round-trip flight is <span class="highlight-price">{{flight}}</span> per person. So your grand total is <span class="highlight-price">{{grandReg}}</span> per person.</strong></div></div>
+
+  <div class="note"><span class="pause">PAUSE</span> Let the total land. Don't rush to the early bird.</div>
+
+  <div class="say"><div class="say-content"><strong>Now the good thing is, we still have the early bird offer running. This is available on the first {{ebSeats}} seats out of {{groupSize}}. Your land package drops from {{landReg}} to <span class="highlight-price">{{landEB}}</span> per person. That is {{ebDiscount}} saved per person. So after the early bird, your grand total becomes <span class="highlight-price">{{grandEB}}</span> per person.</strong></div></div>
+
+  <div class="say"><div class="say-content"><strong>And on top of the early bird, we are adding two complimentary experiences — a traditional Bhutanese hot stone bath worth ₹3,500 per person, and a Bhutanese farmhouse experience with butter tea and local wine worth ₹2,500 per person.</strong></div></div>
+
+  <div class="say"><div class="say-content"><strong>So in total, you are getting benefits worth about <span class="highlight-price">{{benefitsPP}}</span> per person. For a couple, that is <span class="highlight-price">{{benefitsCouple}}</span>. Your final total after early bird — <span class="highlight-price">{{grandEB}}</span> per person, all-inclusive, everything handled by us.</strong></div></div>
+
+  <h3>Competitor reframe</h3>
+  <div class="say"><div class="say-content"><strong>Sir/Ma'am, I know you may have seen Bhutan packages at ₹40,000–45,000 per person. Those packages usually do not include meals, the SDF fee of ₹6,000 per person, guide, or a tour manager. When you add everything, you end up paying ₹80,000–90,000 per person and managing everything yourself. With us, you pay once — no surprises.</strong></div></div>
+
+  <h3>Then ask the question</h3>
+  <div class="say"><div class="say-content"><strong>Sir/Ma'am, have you traveled outside India before, or would this be the first time?</strong></div></div>
+
+  <div class="checkpoint-badge multi">Checkpoint 2 — Price delivered</div>
+</div>`,
+    checkpoint: 2,
+    buttons: [
+      { label: "Traveled before", goto: "s5_traveled_before", kind: "primary" },
+      { label: "First-time traveler", goto: "s6_first_timer", kind: "secondary" },
+      { label: "Too expensive →", goto: "s7_too_expensive", kind: "secondary" },
+      { label: "Send details →", goto: "s8_send_details", kind: "ghost" }
+    ]
+  },
+
+  "s5_traveled_before": {
+    section: 1, step: "Follow-up",
+    title: "They've traveled before",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Where did you go? And how was that trip?</strong></div></div>
+  <div class="note"><strong>Listen.</strong> Note what they liked and didn't like. Also note who they went with (family/friends/group).</div>
+  <div class="say"><div class="say-content"><strong>If they mention a complaint:</strong> <em>“Yes, that happens with many tours. We keep things very different — small group, comfortable pace, good food.”</em></div></div>
+  <div class="checkpoint-badge">Checkpoint 3 — Travel history understood</div>
+</div>`,
+    checkpoint: 3,
+    buttons: [
+      { label: "Continue to Section 2 →", goto: "s11_eldergo_story", kind: "primary" }
+    ]
+  },
+
+  "s6_first_timer": {
+    section: 1, step: "Follow-up",
+    title: "First-time international traveler",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>No problem, Sir/Ma'am. Many of our travelers go abroad for the first time with us. Is there anything about going abroad that worries you — like food, or language, or anything?</strong></div></div>
+  <div class="note"><strong>Listen carefully</strong> — their worry is gold. Address it in Section 2 and Section 3. First-timers need more reassurance on safety + tour manager.</div>
+  <div class="checkpoint-badge">Checkpoint 3 — Travel history understood</div>
+</div>`,
+    checkpoint: 3,
+    buttons: [
+      { label: "Continue to Section 2 →", goto: "s11_eldergo_story", kind: "primary" }
+    ]
+  },
+
+  "s7_too_expensive": {
+    section: 1, step: "Objection",
+    title: "Customer says: Too expensive",
+    body: () => `
+<div class="confirm-card warn">
+  <div class="icon">💰</div>
+  <h3>Open the Objection Playbook</h3>
+  <p>Use the Objections button (bottom-right) and go to <strong>#5 Price is too high</strong> or <strong>#16 Give me a discount</strong>. Handle the objection, then continue the pitch.</p>
+</div>
+<div class="btn-row">
+  <button class="btn btn-accent" onclick="openObjection(5)">Open #5 — Too expensive</button>
+  <button class="btn btn-accent" onclick="openObjection(16)">Open #16 — Discount</button>
+</div>
+<div class="talk-track" style="margin-top: 18px;">
+  <div class="note"><strong>After handling the objection:</strong> Continue to Section 2 to keep building the relationship. Don't re-pitch price — let Section 3 recap do that later.</div>
+</div>`,
+    buttons: [
+      { label: "Back to Quick Pricing", goto: "s4_quick_pricing", kind: "ghost" },
+      { label: "Objection handled — continue →", goto: "s11_eldergo_story", kind: "primary" }
+    ]
+  },
+
+  "s8_send_details": {
+    section: 1, step: "Retention Hook",
+    title: "Customer says: Send me details",
+    body: () => `
+<div class="talk-track">
+  <div class="note"><strong>Retention hook:</strong> Don't let them escape with just a WhatsApp. Ask one engaging question, share one Bhutan detail, then set callback.</div>
+
+  <div class="say"><div class="say-content"><strong>Of course, Sir/Ma'am, I will send everything in 10 minutes. Before I send — quick thing, have you traveled outside India before?</strong></div></div>
+  <div class="note">Listen briefly. Then share one hook.</div>
+  <div class="say"><div class="say-content"><strong>One quick thing about Bhutan — it's one of the cleanest and most peaceful countries in the world. And you don't even need a passport — just a Voter ID. That's one reason many of our travelers pick it as their first international trip.</strong></div></div>
+  <div class="say"><div class="say-content"><strong>I will send the itinerary and a short testimonial video in the next 10 minutes. Would it be okay if I call you [day] around [time]?</strong></div></div>
+  <div class="note">If they give a callback slot, <strong>they didn't really want to escape.</strong> If they still push away — mark scheduled callback or qualified out based on their tone.</div>
+</div>`,
+    buttons: [
+      { label: "Customer gave callback slot — continue →", goto: "s11_eldergo_story", kind: "primary" },
+      { label: "Callback scheduled — End Call", goto: "s_end_callback", kind: "secondary" },
+      { label: "Customer says no — Qualified Out", goto: "s_end_qualified_out", kind: "ghost" }
+    ]
+  },
+
+  /* ---------- FLOW 2: Travel history first ---------- */
+
+  "s10_travel_history": {
+    section: 1, step: "Flow 2 — Travel History",
+    title: "Ask about travel history",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Sir/Ma'am, have you traveled outside India before, or would this be the first time?</strong></div></div>
+  <div class="branch"><strong>If YES</strong><em>“Where did you go? And how was that trip?”</em> Listen, note.</div>
+  <div class="branch"><strong>If NO</strong><em>“No problem, Sir/Ma'am. Many of our travelers go abroad for the first time with us. Is there anything about going abroad that worries you?”</em></div>
+  <div class="checkpoint-badge">Checkpoint 3 — Travel history understood</div>
+</div>`,
+    checkpoint: 3,
+    buttons: [
+      { label: "Continue to Section 2 →", goto: "s11_eldergo_story", kind: "primary" }
+    ]
+  },
+
+  /* ---------- SECTION 2: GETTING TO KNOW ---------- */
+
+  "s11_eldergo_story": {
+    section: 2, step: "The ElderGo Story",
+    title: "Share: The ElderGo Story",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Sir/Ma'am, let me tell you a little about us. ElderGo was started by our founder who used to take his own parents on trips — about 7 years ago. Their friends wanted to come, then more people joined, and it became a full company. In the last year alone, we have done 15 group tours to 7 countries — Bali, Vietnam, Sri Lanka, Bhutan, Dubai, and more. We only do tours for seniors. No youngsters in the group. Everything is planned for comfort.</strong></div></div>
+
+  <h3>Micro-question</h3>
+  <div class="say"><div class="say-content"><strong>Have you heard of senior-only tours before, Sir/Ma'am, or is this the first time?</strong></div></div>
+  <div class="note">Let them respond. Keep it light.</div>
+
+  <h3>The repeat rate</h3>
+  <div class="say"><div class="say-content"><strong>And I am happy to share — 7 out of 10 of our travelers come back and book another trip with us. So people really enjoy the experience.</strong></div></div>
+
+  <div class="note"><strong>Do NOT say:</strong> founder's name, inflated customer counts, "we started in 2018", or "India's first".</div>
+
+  <div class="checkpoint-badge multi">Checkpoint 5 — ElderGo story delivered</div>
+  <div class="checkpoint-badge">Checkpoint 6 — Repeat rate (7/10) mentioned</div>
+</div>`,
+    checkpoint: [5, 6],
+    buttons: [
+      { label: "Continue →", goto: "s12_age", kind: "primary" }
+    ]
+  },
+
+  "s12_age": {
+    section: 2, step: "Q1 — Age",
+    title: "Question: Age",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Sir/Ma'am, may I know your age? I ask because our tours are only for seniors aged 55 and above.</strong></div></div>
+  <div class="branch"><strong>If under 55</strong><em>“Sir/Ma'am, our tours are specially designed for seniors — the pace, the hotels, the group, everything is for people aged 55 and above. But if you are looking to book this for your parents, I would be happy to help.”</em></div>
+</div>`,
+    buttons: [
+      { label: "55+ confirmed →", goto: "s13_group_travel", kind: "primary" },
+      { label: "Under 55 — booking for parents", goto: "s13_group_travel", kind: "secondary" },
+      { label: "Under 55 — qualify out", goto: "s_end_qualified_out", kind: "ghost" }
+    ]
+  },
+
+  "s13_group_travel": {
+    section: 2, step: "Q2 — Group Travel",
+    title: "Question: Group Travel Experience",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Have you ever traveled in a group — like 15–20 people going together, staying in the same hotels, eating together? Or have your trips always been just with family or friends?</strong></div></div>
+  <div class="branch"><strong>If they've done group tours</strong><em>“How was that?”</em> Listen. Note group size, complaints.</div>
+  <div class="branch"><strong>If never</strong><em>“Many of our travelers try group travel for the first time with us. Our groups are small — only 15 to 20 seniors. By the second day, everyone becomes like friends. 30% of our travelers come alone and enjoy it the most.”</em></div>
+</div>`,
+    buttons: [
+      { label: "Continue →", goto: "s14_tour_manager", kind: "primary" }
+    ]
+  },
+
+  "s14_tour_manager": {
+    section: 2, step: "Share — Safety",
+    title: "Share: Tour Manager & Safety",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Sir/Ma'am, one important thing — on every trip, we send a trained tour manager from India. This person travels with your group from Day 1 to the last day. They handle everything — hotel check-in, meals, transport, even small problems. If your room AC is not working at 2 AM, one call and it is fixed.</strong></div></div>
+
+  <div class="say"><div class="say-content"><strong>We have short video testimonials from seniors who went to Bhutan with us — real people sharing how their trip was. After our conversation, I will send you 2–3 of these on WhatsApp so you can watch them in a relaxed manner.</strong></div></div>
+
+  <div class="note"><strong>Important:</strong> You've just committed to sending videos. Make sure you actually send them within 10 minutes of the call.</div>
+
+  <div class="checkpoint-badge">Checkpoint 7 — Testimonial videos committed</div>
+</div>`,
+    checkpoint: 7,
+    buttons: [
+      { label: "Continue →", goto: "s15_health", kind: "primary" }
+    ]
+  },
+
+  "s15_health": {
+    section: 2, step: "Q3 — Health",
+    title: "Question: Health Concerns",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Sir/Ma'am, one thing I always ask — do you have any health concerns? Knee pain, BP, diabetes, anything? I ask because we plan the trip keeping comfort in mind.</strong></div></div>
+
+  <h3>Response templates</h3>
+  <div class="branch"><strong>Knee pain</strong><em>“This trip has no heavy climbing. The bus is comfortable and we stop regularly.”</em></div>
+  <div class="branch"><strong>BP / Diabetes</strong><em>“We adjust meals for dietary needs. Tour manager carries a medical kit.”</em></div>
+  <div class="branch"><strong>Heart</strong><em>“Please check with your doctor. If they say you are fit, we will make sure you are comfortable.”</em></div>
+  <div class="note"><strong>Do not guarantee</strong> medical safety. Do not dismiss concerns. For serious conditions → Objection #8.</div>
+  <div class="checkpoint-badge">Checkpoint 4 — Health asked</div>
+</div>`,
+    checkpoint: 4,
+    buttons: [
+      { label: "Continue →", goto: "s16_companion", kind: "primary" }
+    ]
+  },
+
+  "s16_companion": {
+    section: 2, step: "Confirm — Companion",
+    title: "Confirm: Travel Companion",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>[If form data shows spouse]</strong> <em>“I can see you are planning to travel with your [wife/husband]. Is that correct?”</em></div></div>
+  <div class="say"><div class="say-content"><strong>[If no form data]</strong> <em>“Will you be traveling alone, or with someone?”</em></div></div>
+  <div class="note">If alone: reassure that 30% of travelers come alone. If spouse: note decision is joint — may trigger Objection #4.</div>
+</div>`,
+    buttons: [
+      { label: "Continue →", goto: "s17_occasion", kind: "primary" }
+    ]
+  },
+
+  "s17_occasion": {
+    section: 2, step: "Q5 — Occasion",
+    title: "Question: Special Occasion (Optional)",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Is there any special reason for this trip? Retirement, anniversary, or just a holiday?</strong></div></div>
+  <div class="note">If anniversary or milestone — note this. We can arrange a small surprise (cake, flowers). Gold for referrals later.</div>
+</div>`,
+    buttons: [
+      { label: "Continue to Bhutan Experience →", goto: "s20_moments", kind: "primary" },
+      { label: "Skip →", goto: "s20_moments", kind: "ghost" }
+    ]
+  },
+
+  /* ---------- SECTION 3: THE EXPERIENCE ---------- */
+
+  "s20_moments": {
+    section: 3, step: "4 Moments",
+    title: "The 4 Moments of Bhutan",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Sir/Ma'am, let me tell you what makes Bhutan special.</strong></div></div>
+
+  <h3>Moment 1 — The silence</h3>
+  <div class="say"><div class="say-content"><strong>Bhutan is one of the cleanest and most peaceful countries in the world. When you reach there, the first thing you will notice is the silence. No honking, no pollution, no crowds. People who have gone with us always say it feels like a completely different world.</strong></div></div>
+
+  <h3>Moment 2 — Punakha Dzong</h3>
+  <div class="say"><div class="say-content"><strong>You will visit a place called Punakha Dzong — they call it the Palace of Great Happiness. It is at a spot where two rivers meet, with mountains all around. Very beautiful. After that, you walk across a long bridge over the river — very safe, very gentle — and the view from there is what our travelers photograph the most.</strong></div></div>
+
+  <h3>Micro-question</h3>
+  <div class="say"><div class="say-content"><strong>Does that sound nice, Sir/Ma'am?</strong></div></div>
+  <div class="note">Let them respond before continuing.</div>
+
+  <h3>Moment 3 — The farmhouse evening</h3>
+  <div class="say"><div class="say-content"><strong>One evening, you visit a real Bhutanese home. A local family serves you butter tea and homemade wine, and you see how they actually live. Not a show for tourists — a real home. Our travelers say this is the meal they remember the most.</strong></div></div>
+
+  <h3>Moment 4 — The hot stone bath</h3>
+  <div class="say"><div class="say-content"><strong>And we include a traditional hot stone bath — a 500-year-old practice where heated river stones are placed in a wooden tub. Very relaxing. This costs ₹3,500 per person if you book separately. We include it for every traveler.</strong></div></div>
+
+  <div class="checkpoint-badge">Checkpoint 8 — At least 2 Bhutan moments shared</div>
+</div>`,
+    checkpoint: 8,
+    buttons: [
+      { label: "Continue to Trip Structure →", goto: "s21_structure", kind: "primary" }
+    ]
+  },
+
+  "s21_structure": {
+    section: 3, step: "Trip Structure",
+    title: "Trip Structure",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>The full trip is {{duration}}. You go from Bagdogra to three places — Thimphu, Punakha, and Paro. Each one is different — Thimphu is about culture, Punakha has the best nature views, and Paro has the old temples. The pace is very comfortable. No rushing. Drives have regular stops. You stay in 4-star and good 3-star hotels. Breakfast, lunch, and dinner — all included, every day.</strong></div></div>
+
+  <h3>Passport note</h3>
+  <div class="say"><div class="say-content"><strong>And one good thing — {{passportLine}}</strong></div></div>
+
+  <h3>If asked for day-by-day</h3>
+  <div class="say"><div class="say-content"><strong>I will send the complete day-by-day plan on WhatsApp. Short version: {{nightsBreakdown}}.</strong></div></div>
+</div>`,
+    buttons: [
+      { label: "Continue to Pricing →", goto: "s22_pricing_branch", kind: "primary" }
+    ]
+  },
+
+  "s22_pricing_branch": {
+    section: 3, step: "Pricing Branch",
+    title: "Has the customer already heard the price?",
+    body: () => `
+<div class="decision-card">
+  <div class="q">Did you present pricing in Section 1?</div>
+  <div class="q-sub">Flow 1 customers heard quick pricing. Flow 2 customers haven't.</div>
+</div>`,
+    buttons: [
+      { label: "YES — show recap", goto: "s23_pricing_recap", kind: "primary" },
+      { label: "NO — show detailed pricing", goto: "s24_detailed_pricing", kind: "secondary" }
+    ]
+  },
+
+  "s23_pricing_recap": {
+    section: 3, step: "Pricing Recap",
+    title: "Pricing Recap",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Sir/Ma'am, as I mentioned earlier, your early bird price is <span class="highlight-price">{{landEB}}</span> per person for the land package, plus <span class="highlight-price">{{flight}}</span> per person for the round-trip flight. Grand total <span class="highlight-price">{{grandEB}}</span> per person — with the hot stone bath and farmhouse experience complimentary. Everything handled by us.</strong></div></div>
+  <div class="say"><div class="say-content"><strong>Any questions, Sir/Ma'am?</strong></div></div>
+  <div class="checkpoint-badge">Checkpoint 9 — Price with inclusions delivered</div>
+</div>`,
+    checkpoint: 9,
+    buttons: [
+      { label: "Continue to Close →", goto: "s30_close", kind: "primary" }
+    ]
+  },
+
+  "s24_detailed_pricing": {
+    section: 3, step: "Detailed Pricing",
+    title: "Detailed Pricing — Full Presentation",
+    body: () => `
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Sir/Ma'am, this is a completely all-inclusive package. Everything from your home airport to your home airport is included. No hidden costs. Only personal shopping is extra.</strong></div></div>
+
+  <h3>Inclusions first, price after</h3>
+  <div class="say"><div class="say-content"><strong>Before I tell you the price, let me tell you what is covered so you know exactly what you are getting:</strong></div></div>
+
+  <div class="say"><div class="say-content"><strong>7 nights in 4-star and premium 3-star hotels. Breakfast, lunch, and dinner on every single day. A certified Bhutanese cultural guide — required by Bhutan law. The Sustainable Development Fee — ₹6,000 per person, every visitor to Bhutan has to pay this. A first-aid trained tour manager from India who travels with you the entire trip. Comfortable AC transport throughout. All entry tickets to every location. A Bhutanese SIM card so you are always connected. GST and service charges — everything covered.</strong></div></div>
+
+  <h3>Per-day anchor</h3>
+  <div class="say"><div class="say-content"><strong>For all of this, the cost comes to about <span class="highlight-price">{{perDay}}</span> per person per day. For 8 days, the land package — meaning the package cost without flight charges — is <span class="highlight-price">{{landReg}}</span> per person.</strong></div></div>
+
+  <h3>Flight</h3>
+  <div class="say"><div class="say-content"><strong>On top of this, we book your round-trip flights for you. The round-trip flight is <span class="highlight-price">{{flight}}</span> per person. So your grand total is <span class="highlight-price">{{grandReg}}</span> per person.</strong></div></div>
+
+  <div class="note"><span class="pause">PAUSE</span> Let it land.</div>
+
+  <h3>Early bird drop</h3>
+  <div class="say"><div class="say-content"><strong>Now the good thing is, we have the early bird offer running on the first {{ebSeats}} seats out of {{groupSize}}. Your land package drops from {{landReg}} to <span class="highlight-price">{{landEB}}</span> per person. That is {{ebDiscount}} saved per person. So after early bird, your grand total becomes <span class="highlight-price">{{grandEB}}</span> per person.</strong></div></div>
+
+  <h3>Complimentary add-ons</h3>
+  <div class="say"><div class="say-content"><strong>And on top of the early bird, we are adding two complimentary experiences:</strong></div></div>
+  <div class="say"><div class="say-content"><strong>First — a traditional Bhutanese hot stone bath, worth ₹3,500 per person.</strong></div></div>
+  <div class="say"><div class="say-content"><strong>Second — the Bhutanese farmhouse experience with butter tea and local wine, worth ₹2,500 per person.</strong></div></div>
+
+  <h3>Total benefits</h3>
+  <div class="say"><div class="say-content"><strong>So in total, you are getting benefits worth about <span class="highlight-price">{{benefitsPP}}</span> per person. For a couple, that is <span class="highlight-price">{{benefitsCouple}}</span>. After the early bird, your grand total is <span class="highlight-price">{{grandEB}}</span> per person — all-inclusive, everything handled by us.</strong></div></div>
+  <div class="say"><div class="say-content"><strong>Is that clear, Sir/Ma'am? Any questions?</strong></div></div>
+
+  <h3>If payment asked</h3>
+  <div class="say"><div class="say-content"><strong>You do not have to pay everything at once. Booking advance is {{advance}} per person. After that, the rest is split into 3 easy installments. The last installment is about 21 days before the trip.</strong></div></div>
+
+  <div class="checkpoint-badge">Checkpoint 9 — Price with inclusions delivered</div>
+</div>`,
+    checkpoint: 9,
+    buttons: [
+      { label: "Continue to Close →", goto: "s30_close", kind: "primary" }
+    ]
+  },
+
+  /* ---------- SECTION 4: CLOSE ---------- */
+
+  "s30_close": {
+    section: 4, step: "The Close",
+    title: "Close the Call — Pick an Outcome",
+    body: () => `
+<div class="talk-track">
+  <div class="note"><strong>Every call MUST end with one of four outcomes.</strong> Pick what applies, then use the script.</div>
+</div>
+
+<div class="btn-row stack" style="margin-top: 16px;">
+  <button class="btn btn-success" onclick="goTo('s_close_booking')">✓ Booking — collect advance</button>
+  <button class="btn btn-primary" onclick="goTo('s_close_callback')">📞 Scheduled Callback</button>
+  <button class="btn btn-secondary" onclick="goTo('s_close_wjft')">📱 WJFT — Will Join Future Trip</button>
+  <button class="btn btn-ghost" onclick="goTo('s_close_qualified_out')">✕ Qualified Out</button>
+</div>
+
+<div class="talk-track" style="margin-top: 18px;">
+  <h3>All 4 outcome scripts</h3>
+
+  <h3>Booking</h3>
+  <div class="say"><div class="say-content"><strong>That is great, Sir/Ma'am. To confirm your seat, we take a booking advance of {{advance}} per person. I can send a payment link on WhatsApp, or you can do bank transfer. Which is better?</strong></div></div>
+
+  <h3>Scheduled Callback</h3>
+  <div class="say"><div class="say-content"><strong>I will send you the full day-by-day plan, pricing, and some videos on WhatsApp in the next 10 minutes. When is a good time to call you again — [suggest day] around [suggest time]?</strong></div></div>
+
+  <h3>WJFT</h3>
+  <div class="say"><div class="say-content"><strong>No problem, Sir/Ma'am. We have trips every month. I will add you to our WhatsApp community. When something suits you, I will call you personally.</strong></div></div>
+
+  <h3>Qualified Out</h3>
+  <div class="say"><div class="say-content"><strong>Thank you for your time, Sir/Ma'am. If you ever think about traveling with a senior group, we are here. Have a good day.</strong></div></div>
+</div>`,
+    buttons: null    // handled by inline action buttons above
+  },
+
+  "s_close_booking": {
+    section: 4, step: "BOOKING",
+    title: "Booking — Collect Advance",
+    body: () => `
+<div class="confirm-card">
+  <div class="icon">🎉</div>
+  <h3>Booking confirmed</h3>
+  <p>Collect the <strong>{{advance}}</strong> advance per person, then send payment link or bank details on WhatsApp within 10 minutes.</p>
+</div>
+
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>That is great, Sir/Ma'am. To confirm your seat, we take a booking advance of {{advance}} per person. I can send a payment link on WhatsApp, or you can do bank transfer. Which is better?</strong></div></div>
+</div>
+
+<div class="bank-details">
+  <h4>Bank Transfer Details</h4>
+  <div class="row"><span class="lbl">Bank</span><span class="val">Axis Bank — Corporate Current Account</span></div>
+  <div class="row"><span class="lbl">Account Name</span><span class="val">Eldaura Senior Adventures Private Limited</span></div>
+  <div class="row"><span class="lbl">Account Number</span><span class="val">925020003767362</span></div>
+  <div class="row"><span class="lbl">IFSC</span><span class="val">UTIB0000694</span></div>
+  <button class="btn btn-sm btn-secondary" style="margin-top: 10px;" onclick="copyBankDetails()">📋 Copy bank details</button>
+</div>
+
+${crmNoteBlockHtml()}
+`,
+    checkpoint: 10,
+    outcome: "BOOKING",
+    buttons: [
+      { label: "✓ Save & End Call", goto: "s_end_booking", kind: "success" }
+    ]
+  },
+
+  "s_close_callback": {
+    section: 4, step: "CALLBACK",
+    title: "Scheduled Callback",
+    body: () => `
+<div class="confirm-card warn">
+  <div class="icon">📞</div>
+  <h3>Callback scheduled</h3>
+  <p>Get a <strong>specific day AND time</strong>. Log it in TeleCRM. Send WhatsApp within 10 minutes with: day-by-day plan PDF + 2 Bhutan testimonial videos + callback confirmation.</p>
+</div>
+
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>I will send you the full day-by-day plan, pricing, and some videos on WhatsApp in the next 10 minutes. When is a good time to call you again — [suggest day] around [suggest time]?</strong></div></div>
+</div>
+
+${crmNoteBlockHtml()}
+`,
+    checkpoint: 10,
+    outcome: "SCHEDULED_CALLBACK",
+    buttons: [
+      { label: "✓ Save & End Call", goto: "s_end_callback", kind: "primary" }
+    ]
+  },
+
+  "s_close_wjft": {
+    section: 4, step: "WJFT",
+    title: "Will Join Future Trip",
+    body: () => `
+<div class="confirm-card warn">
+  <div class="icon">📱</div>
+  <h3>WJFT — future trip</h3>
+  <p>Add to WhatsApp community. Send short text + 1 testimonial video within 10 minutes.</p>
+</div>
+
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>No problem, Sir/Ma'am. We have trips every month. I will add you to our WhatsApp community. When something suits you, I will call you personally.</strong></div></div>
+</div>
+
+${crmNoteBlockHtml()}
+`,
+    checkpoint: 10,
+    outcome: "WJFT",
+    buttons: [
+      { label: "✓ Save & End Call", goto: "s_end_wjft", kind: "secondary" }
+    ]
+  },
+
+  "s_close_qualified_out": {
+    section: 4, step: "QUALIFIED OUT",
+    title: "Qualified Out",
+    body: () => `
+<div class="confirm-card warn">
+  <div class="icon">✕</div>
+  <h3>Qualified Out</h3>
+  <p>Do not send WhatsApp. Update CRM with reason. Move on.</p>
+</div>
+
+<div class="talk-track">
+  <div class="say"><div class="say-content"><strong>Thank you for your time, Sir/Ma'am. If you ever think about traveling with a senior group, we are here. Have a good day.</strong></div></div>
+</div>
+
+${crmNoteBlockHtml()}
+`,
+    checkpoint: 10,
+    outcome: "QUALIFIED_OUT",
+    buttons: [
+      { label: "✓ Save & End Call", goto: "s_end_qualified_out", kind: "ghost" }
+    ]
+  },
+
+  /* ---------- END SCREENS ---------- */
+
+  "s_end_booking": endScreen("BOOKING", "🎉", "Booking saved", "Send payment link on WhatsApp within 10 minutes. Booking advance: {{advance}} per person."),
+  "s_end_callback": endScreen("SCHEDULED_CALLBACK", "📞", "Callback logged", "Send WhatsApp with itinerary PDF + 2 testimonial videos. Then set CRM callback alarm."),
+  "s_end_wjft": endScreen("WJFT", "📱", "WJFT saved", "Add to WhatsApp community. Send short text + 1 video."),
+  "s_end_qualified_out": endScreen("QUALIFIED_OUT", "✕", "Lead closed", "No WhatsApp needed. Update CRM reason."),
+  "s_end_junk": endScreen("JUNK", "🚫", "Marked as Junk", "Move on. No follow-up."),
+
+};
+
+/* End-screen factory */
+function endScreen(outcome, icon, title, note) {
+  return {
+    section: 4, step: "END",
+    title: title,
+    outcome: outcome,
+    body: () => `
+<div class="confirm-card ${outcome === 'BOOKING' ? '' : 'warn'}">
+  <div class="icon">${icon}</div>
+  <h3>${escapeHtml(title)}</h3>
+  <p>${note}</p>
+</div>
+<div class="talk-track">
+  <div class="note"><strong>Next steps:</strong> Save the CRM note, mark the outcome in TeleCRM, and (if applicable) send WhatsApp within 10 minutes.</div>
+</div>`,
+    buttons: [
+      { label: "↻ Start New Call", goto: "__new_call__", kind: "primary" }
+    ]
+  };
+}
+
+/* CRM note HTML block — reused on all close screens */
+function crmNoteBlockHtml() {
+  return `
+<div class="crm-note" id="crmNote">
+  <h3>📝 CRM Note — fill & copy</h3>
+  <div class="form-row">
+    <label>
+      <span class="lbl">Call Type</span>
+      <select id="crmCallType">
+        <option>First Call</option>
+        <option>Follow-up #1</option>
+        <option>Follow-up #2</option>
+        <option>Follow-up #3</option>
+        <option>Callback</option>
+      </select>
+    </label>
+  </div>
+  <div class="form-row">
+    <label>
+      <span class="lbl">Concern</span>
+      <select id="crmConcern">
+        <option>None</option>
+        <option>Budget</option>
+        <option>Health</option>
+        <option>Family</option>
+        <option>Trust</option>
+        <option>Timing</option>
+        <option>Group anxiety</option>
+        <option>Competitor</option>
+      </select>
+    </label>
+  </div>
+  <div class="form-row">
+    <label>
+      <span class="lbl">What they said</span>
+      <textarea id="crmSaid" rows="3" placeholder="2–3 lines — what the customer said in their own words"></textarea>
+    </label>
+  </div>
+  <div class="form-row">
+    <label>
+      <span class="lbl">Personal</span>
+      <textarea id="crmPersonal" rows="2" placeholder="One thing to remember — anniversary, hometown, concern"></textarea>
+    </label>
+  </div>
+  <div class="preview" id="crmPreview">CALL TYPE: First Call
+CONCERN: None
+WHAT THEY SAID: 
+PERSONAL: </div>
+  <button class="btn btn-accent btn-sm copy-btn-inline" id="crmCopyBtn">📋 Copy CRM Note</button>
+</div>`;
+}
+
+/* =============================================================
+   RENDERING
+   ============================================================= */
+
+function renderScreen(id) {
+  const screen = SCREENS[id];
+  if (!screen) {
+    console.error("Unknown screen:", id);
+    return;
+  }
+
+  state.currentScreen = id;
+  saveState();
+
+  // Update breadcrumbs + title
+  document.getElementById("breadcrumb").innerHTML =
+    `<span>Section ${screen.section}</span><span class="dot"></span><span>${escapeHtml(screen.step)}</span>`;
+  document.getElementById("screenTitle").textContent = screen.title;
+
+  // Update progress bar based on current screen
+  const progress = computeProgress(id);
+  document.getElementById("progressFill").style.width = progress + "%";
+
+  // Render body with placeholders replaced
+  const bodyHtml = typeof screen.body === "function" ? screen.body() : (screen.body || "");
+  const rendered = renderPlaceholders(bodyHtml);
+  document.getElementById("screenBody").innerHTML = rendered;
+
+  // Auto-check checkpoint(s) on this screen
+  if (screen.checkpoint) {
+    const cps = Array.isArray(screen.checkpoint) ? screen.checkpoint : [screen.checkpoint];
+    cps.forEach(cp => {
+      if (!state.checkpoints[cp]) {
+        state.checkpoints[cp] = true;
+      }
+    });
+    renderCheckpoints();
+    saveState();
+  }
+
+  // Record outcome on close screens
+  if (screen.outcome) {
+    state.outcome = screen.outcome;
+    saveState();
+  }
+
+  // Render buttons
+  const btnWrap = document.createElement("div");
+  btnWrap.className = "btn-row";
+  if (screen.buttons) {
+    btnWrap.innerHTML = screen.buttons.map(b =>
+      `<button class="btn btn-${b.kind || 'primary'}" data-goto="${b.goto}">${escapeHtml(b.label)}</button>`
+    ).join("");
+    document.getElementById("screenBody").appendChild(btnWrap);
+  }
+
+  // Wire up button clicks
+  btnWrap.querySelectorAll("[data-goto]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tgt = btn.getAttribute("data-goto");
+      if (tgt === "__new_call__") { startNewCall(); return; }
+      goTo(tgt);
+    });
+  });
+
+  // Wire up CRM note if present
+  wireCrmNote();
+
+  // Back button visibility
+  document.getElementById("backBtn").style.display = state.history.length > 0 ? "inline-flex" : "none";
+
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function computeProgress(screenId) {
+  // rough section-based progress
+  const order = [
+    "s1_intro","s2_language","s3_price_branch","s4_quick_pricing","s5_traveled_before",
+    "s6_first_timer","s7_too_expensive","s8_send_details","s10_travel_history",
+    "s11_eldergo_story","s12_age","s13_group_travel","s14_tour_manager","s15_health","s16_companion","s17_occasion",
+    "s20_moments","s21_structure","s22_pricing_branch","s23_pricing_recap","s24_detailed_pricing",
+    "s30_close","s_close_booking","s_close_callback","s_close_wjft","s_close_qualified_out"
+  ];
+  const idx = order.indexOf(screenId);
+  if (idx === -1) return 100;
+  return Math.min(100, Math.round((idx / (order.length - 1)) * 100));
+}
+
+function goTo(screenId) {
+  if (!SCREENS[screenId]) {
+    console.warn("No screen:", screenId);
+    return;
+  }
+  if (state.currentScreen) {
+    state.history.push(state.currentScreen);
+  }
+  renderScreen(screenId);
+}
+
+function goBack() {
+  if (state.history.length === 0) return;
+  const prev = state.history.pop();
+  renderScreen(prev);
+  saveState();
+}
+
+/* =============================================================
+   SIDEBAR RENDERING
+   ============================================================= */
+
+function renderSidebar() {
+  const c = state.customer;
+  document.getElementById("sbName").textContent = c.name || "—";
+  document.getElementById("sbCity").textContent = c.city ? `${c.city}` : "";
+  document.getElementById("sbFlight").value = c.flightPrice || 0;
+  document.getElementById("sbPax").value = String(c.pax || 2);
+  renderTotals();
+  renderCheckpoints();
+}
+
+function renderTotals() {
+  const c = state.customer;
+  const pax = c.pax || 1;
+  const flight = c.flightPrice || 0;
+  const landReg = TRIP.pricing.landRegular;
+  const landEB = TRIP.pricing.landEarlyBird;
+  const grandReg = landReg + flight;
+  const grandEB = landEB + flight;
+  const savings = TRIP.pricing.earlyBirdDiscount;
+  const comp = TRIP.complimentaryTotalValue;
+  const benefits = TRIP.totalBenefits;
+
+  document.getElementById("tLandReg").textContent = `${formatINR(landReg)} × ${pax} = ${formatINR(landReg * pax)}`;
+  document.getElementById("tGrandReg").textContent = `${formatINR(grandReg)} × ${pax} = ${formatINR(grandReg * pax)}`;
+  document.getElementById("tLandEB").textContent = `${formatINR(landEB)} × ${pax} = ${formatINR(landEB * pax)}`;
+  document.getElementById("tGrandEB").textContent = `${formatINR(grandEB)} × ${pax} = ${formatINR(grandEB * pax)}`;
+  document.getElementById("tSavings").textContent = `${formatINR(savings)} × ${pax} = ${formatINR(savings * pax)}`;
+  document.getElementById("tComp").textContent = `${formatINR(comp)} × ${pax} = ${formatINR(comp * pax)}`;
+  document.getElementById("tBenefits").textContent = `${formatINR(benefits)} × ${pax} = ${formatINR(benefits * pax)}`;
+}
+
+function renderCheckpoints() {
+  const list = document.getElementById("cpList");
+  list.innerHTML = "";
+  let done = 0;
+  CHECKPOINTS.forEach(cp => {
+    const checked = !!state.checkpoints[cp.id];
+    if (checked) done++;
+    const el = document.createElement("label");
+    el.className = "cp-item" + (checked ? " checked" : "");
+    el.innerHTML = `
+      <input type="checkbox" ${checked ? "checked" : ""} data-cp="${cp.id}">
+      <span class="cp-num">${cp.id}</span>
+      <span class="cp-text">${escapeHtml(cp.label)}</span>
+    `;
+    el.querySelector("input").addEventListener("change", (e) => {
+      state.checkpoints[cp.id] = e.target.checked;
+      saveState();
+      renderCheckpoints();
+    });
+    list.appendChild(el);
+  });
+  document.getElementById("cpCount").textContent = `${done}/${CHECKPOINTS.length}`;
+  document.getElementById("cpCount").style.color = done === 10 ? "var(--success)" : "var(--ink-muted)";
+}
+
+/* =============================================================
+   OBJECTION PANEL
+   ============================================================= */
+
+let objectionCurrent = null;
+
+function openObjectionPanel() {
+  document.getElementById("panelBackdrop").classList.add("show");
+  document.getElementById("objectionPanel").classList.add("open");
+  renderObjectionList();
+}
+function closeObjectionPanel() {
+  document.getElementById("panelBackdrop").classList.remove("show");
+  document.getElementById("objectionPanel").classList.remove("open");
+  objectionCurrent = null;
+}
+function openObjection(id) {
+  openObjectionPanel();
+  renderObjectionDetail(id);
+}
+
+function renderObjectionList() {
+  objectionCurrent = null;
+  document.getElementById("panelTitle").innerHTML = `<span>🛡</span> Objection Playbook`;
+  const body = document.getElementById("panelBody");
+  let html = `
+  <div style="background: #F0F6FD; border-left: 3px solid var(--primary); padding: 12px 14px; border-radius: 6px; margin-bottom: 18px; font-size: 13px; color: var(--primary-dark);">
+    <strong>3-step framework:</strong> 1) Acknowledge · 2) Clarify with ONE question · 3) Respond with ONE point, then STOP. Never argue. Never stack rebuttals.
+  </div>`;
+  OBJECTION_CATEGORIES.forEach(cat => {
+    html += `<div class="obj-cat"><div class="obj-cat-label">${cat.label}</div>`;
+    cat.ids.forEach(id => {
+      const obj = OBJECTIONS.find(o => o.id === id);
+      if (!obj) return;
+      html += `<button class="obj-item" data-obj="${id}"><span class="obj-num">${id}</span><span class="obj-text">${escapeHtml(obj.title)}</span><span class="obj-arrow">›</span></button>`;
+    });
+    html += `</div>`;
+  });
+  body.innerHTML = html;
+  body.querySelectorAll(".obj-item").forEach(b => {
+    b.addEventListener("click", () => renderObjectionDetail(parseInt(b.getAttribute("data-obj"))));
+  });
+}
+
+function renderObjectionDetail(id) {
+  const obj = OBJECTIONS.find(o => o.id === id);
+  if (!obj) return;
+  objectionCurrent = id;
+  document.getElementById("panelTitle").innerHTML = `<span>#${id}</span> ${escapeHtml(obj.title)}`;
+  const body = document.getElementById("panelBody");
+  body.innerHTML = `
+<div class="obj-detail">
+  <button class="back-btn" id="objBackBtn">← All objections</button>
+  <div class="obj-header">
+    <h2>${escapeHtml(obj.title)}</h2>
+    <div class="obj-meta">
+      <span class="tag">${escapeHtml(obj.category)}</span>
+      ${obj.freq ? `<span>${escapeHtml(obj.freq)}</span>` : ""}
+    </div>
+  </div>
+
+  <div class="obj-block">
+    <h4>What they say</h4>
+    <div class="says-box"><ul style="margin:0; padding-left: 18px;">${obj.says.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul></div>
+  </div>
+
+  <div class="obj-block">
+    <h4>What they really mean</h4>
+    <div class="mean-box">${escapeHtml(obj.means)}</div>
+  </div>
+
+  <div class="obj-block">
+    <h4>Response</h4>
+    <div class="response-box">${obj.response}</div>
+  </div>
+
+  ${obj.donots ? `
+  <div class="obj-block">
+    <h4>Do NOT</h4>
+    <div class="donot-box"><ul>${obj.donots.map(d => `<li>${escapeHtml(d)}</li>`).join("")}</ul></div>
+  </div>` : ""}
+
+  ${obj.whatsapp ? `
+  <div class="obj-block">
+    <h4>WhatsApp follow-up</h4>
+    <div class="wa-box" id="waBox${id}">
+      <button class="copy-btn" id="waCopy${id}">Copy</button>
+      ${escapeHtml(obj.whatsapp)}
+    </div>
+  </div>` : ""}
+</div>`;
+
+  document.getElementById("objBackBtn").addEventListener("click", renderObjectionList);
+  const copyBtn = document.getElementById(`waCopy${id}`);
+  if (copyBtn) {
+    copyBtn.addEventListener("click", async () => {
+      const ok = await copyText(obj.whatsapp);
+      if (ok) {
+        copyBtn.textContent = "✓ Copied";
+        copyBtn.classList.add("copied");
+        toast("WhatsApp message copied");
+        setTimeout(() => { copyBtn.textContent = "Copy"; copyBtn.classList.remove("copied"); }, 1800);
+      }
+    });
+  }
+  document.getElementById("panelBody").scrollTop = 0;
+}
+
+/* =============================================================
+   CRM NOTE (on close screens)
+   ============================================================= */
+
+function wireCrmNote() {
+  const wrap = document.getElementById("crmNote");
+  if (!wrap) return;
+
+  const callTypeEl = document.getElementById("crmCallType");
+  const concernEl = document.getElementById("crmConcern");
+  const saidEl = document.getElementById("crmSaid");
+  const personalEl = document.getElementById("crmPersonal");
+  const preview = document.getElementById("crmPreview");
+  const copyBtn = document.getElementById("crmCopyBtn");
+
+  // Prefill from state
+  callTypeEl.value = state.crmNote.callType || "First Call";
+  concernEl.value = state.crmNote.concern || "None";
+  saidEl.value = state.crmNote.whatTheySaid || "";
+  personalEl.value = state.crmNote.personal || "";
+
+  function updatePreview() {
+    state.crmNote = {
+      callType: callTypeEl.value,
+      concern: concernEl.value,
+      whatTheySaid: saidEl.value.trim(),
+      personal: personalEl.value.trim()
+    };
+    preview.textContent =
+      `CALL TYPE: ${state.crmNote.callType}\nCONCERN: ${state.crmNote.concern}\nWHAT THEY SAID: ${state.crmNote.whatTheySaid}\nPERSONAL: ${state.crmNote.personal}`;
+    saveState();
+  }
+
+  [callTypeEl, concernEl, saidEl, personalEl].forEach(el => {
+    el.addEventListener("input", updatePreview);
+    el.addEventListener("change", updatePreview);
+  });
+  updatePreview();
+
+  copyBtn.addEventListener("click", async () => {
+    const ok = await copyText(preview.textContent);
+    if (ok) {
+      copyBtn.textContent = "✓ Copied";
+      toast("CRM note copied — paste into TeleCRM");
+      setTimeout(() => copyBtn.textContent = "📋 Copy CRM Note", 1800);
+    }
+  });
+}
+
+function copyBankDetails() {
+  const text = `Bank: ${TRIP.bank.name}
+Account Name: ${TRIP.bank.account}
+Account Number: ${TRIP.bank.number}
+IFSC: ${TRIP.bank.ifsc}`;
+  copyText(text).then(ok => { if (ok) toast("Bank details copied"); });
+}
+
+/* =============================================================
+   CALL TIMER
+   ============================================================= */
+
+let timerInterval = null;
+function startTimer() {
+  stopTimer();
+  timerInterval = setInterval(() => {
+    if (!state) return;
+    const secs = Math.floor((Date.now() - state.callStartedAt) / 1000);
+    document.getElementById("callTimer").textContent = fmtTime(secs);
+  }, 1000);
+}
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+/* =============================================================
+   SETUP / NEW CALL / RESUME
+   ============================================================= */
+
+function showSetup() {
+  document.getElementById("setupOverlay").classList.remove("hidden");
+  document.getElementById("setupTripLine").textContent =
+    `${TRIP.destination} — ${TRIP.departureDate}`;
+  document.getElementById("customerName").focus();
+}
+
+function hideSetup() {
+  document.getElementById("setupOverlay").classList.add("hidden");
+}
+
+function startNewCall() {
+  stopTimer();
+  clearState();
+  document.getElementById("app").classList.add("hidden");
+  // Reset form
+  document.getElementById("customerName").value = "";
+  document.getElementById("customerCity").value = "";
+  document.getElementById("flightPrice").value = "";
+  document.getElementById("paxCount").value = "2";
+  document.getElementById("flightHint").textContent = "";
+  showSetup();
+}
+
+function completeSetup(customerName, customerCity, flight, pax) {
+  state = freshState();
+  state.customer = {
+    name: customerName,
+    city: customerCity,
+    flightPrice: flight,
+    pax: pax
+  };
+  state.currentScreen = "s1_intro";
+  state.history = [];
+  state.callStartedAt = Date.now();
+  saveState();
+  hideSetup();
+  document.getElementById("app").classList.remove("hidden");
+  renderSidebar();
+  renderScreen("s1_intro");
+  startTimer();
+}
+
+function showResume(saved) {
+  const dt = new Date(saved.lastSavedAt);
+  const timeStr = dt.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+  const screenTitle = (SCREENS[saved.currentScreen] && SCREENS[saved.currentScreen].title) || saved.currentScreen;
+  document.getElementById("resumeDetails").innerHTML =
+    `<div><strong>Customer:</strong> ${escapeHtml(saved.customer.name || "—")} (${escapeHtml(saved.customer.city || "—")})</div>
+     <div style="margin-top: 6px;"><strong>Current step:</strong> ${escapeHtml(screenTitle)}</div>
+     <div style="margin-top: 6px;"><strong>Last saved:</strong> ${escapeHtml(timeStr)}</div>`;
+  document.getElementById("resumeOverlay").classList.remove("hidden");
+}
+function hideResume() {
+  document.getElementById("resumeOverlay").classList.add("hidden");
+}
+
+function resumeCall(saved) {
+  state = saved;
+  hideResume();
+  document.getElementById("app").classList.remove("hidden");
+  renderSidebar();
+  renderScreen(state.currentScreen);
+  startTimer();
+}
+
+/* =============================================================
+   INITIALIZATION
+   ============================================================= */
+
+function bindAppEvents() {
+  // Header
+  document.getElementById("newCallBtn").addEventListener("click", () => {
+    if (confirm("Start a new call? Current call state will be discarded.")) {
+      startNewCall();
+    }
+  });
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    if (confirm("Log out? The call in progress will remain saved on this device.")) {
+      try { sessionStorage.removeItem(AUTH_KEY); } catch(e) {}
+      location.reload();
+    }
+  });
+  document.getElementById("backBtn").addEventListener("click", goBack);
+  document.getElementById("restartBtn").addEventListener("click", () => {
+    if (confirm("Go back to Step 1 of this call? Your customer info and checkpoints stay.")) {
+      state.history = [];
+      renderScreen("s1_intro");
+    }
+  });
+
+  // Sidebar inputs
+  document.getElementById("sbFlight").addEventListener("input", (e) => {
+    state.customer.flightPrice = parseInt(e.target.value, 10) || 0;
+    renderTotals();
+    // Re-render current screen to refresh embedded numbers
+    renderScreen(state.currentScreen);
+    saveState();
+  });
+  document.getElementById("sbPax").addEventListener("change", (e) => {
+    state.customer.pax = parseInt(e.target.value, 10) || 1;
+    renderTotals();
+    renderScreen(state.currentScreen);
+    saveState();
+  });
+
+  // Objection panel
+  document.getElementById("objectionFab").addEventListener("click", openObjectionPanel);
+  document.getElementById("panelClose").addEventListener("click", closeObjectionPanel);
+  document.getElementById("panelBackdrop").addEventListener("click", closeObjectionPanel);
+
+  // Trip tag
+  document.getElementById("tripTag").textContent = `${TRIP.destination} · ${TRIP.departureDateShort}`;
+}
+
+function bindSetupEvents() {
+  const cityEl = document.getElementById("customerCity");
+  const flightEl = document.getElementById("flightPrice");
+  const hint = document.getElementById("flightHint");
+
+  cityEl.addEventListener("change", () => {
+    const v = cityEl.value;
+    const def = TRIP.flightPrices[v];
+    if (def !== null && def !== undefined) {
+      flightEl.value = def;
+      hint.textContent = `Current ${v} flight: ${formatINR(def)}. Change if needed.`;
+      hint.classList.remove("warn");
+    } else if (v === "Other") {
+      flightEl.value = "";
+      hint.textContent = "⚠ Check with ops for flight price before proceeding.";
+      hint.classList.add("warn");
+    } else {
+      flightEl.value = "";
+      hint.textContent = "";
+    }
+  });
+
+  document.getElementById("setupBack").addEventListener("click", () => {
+    hideSetup();
+    // If no state — show resume check or new call flow again
+    if (!state) {
+      const saved = loadState();
+      if (saved) showResume(saved);
+      else showSetup();  // loop
+    } else {
+      document.getElementById("app").classList.remove("hidden");
+    }
+  });
+
+  document.getElementById("setupForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("customerName").value.trim();
+    const city = cityEl.value;
+    const flight = parseInt(flightEl.value, 10);
+    const pax = parseInt(document.getElementById("paxCount").value, 10);
+    if (!name || !city || isNaN(flight) || flight < 0) return;
+    completeSetup(name, city, flight, pax);
+  });
+}
+
+function bindResumeEvents() {
+  document.getElementById("resumeContinue").addEventListener("click", () => {
+    const saved = loadState();
+    if (saved) resumeCall(saved);
+  });
+  document.getElementById("resumeDiscard").addEventListener("click", () => {
+    clearState();
+    hideResume();
+    showSetup();
+  });
+}
+
+function bindLoginEvents() {
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const pw = document.getElementById("loginPassword").value;
+    const errEl = document.getElementById("loginError");
+    errEl.style.display = "none";
+    try {
+      const hash = await sha256(pw);
+      if (hash === PASSWORD_HASH) {
+        try { sessionStorage.setItem(AUTH_KEY, "1"); } catch(e) {}
+        try { localStorage.setItem(AUTH_KEY, "1"); } catch(e) {}
+        document.getElementById("loginOverlay").classList.add("hidden");
+        afterLogin();
+      } else {
+        errEl.textContent = "Incorrect password. Please try again.";
+        errEl.style.display = "block";
+        document.getElementById("loginPassword").value = "";
+      }
+    } catch(err) {
+      errEl.textContent = "Browser does not support secure hashing. Try updating your browser.";
+      errEl.style.display = "block";
+    }
+  });
+}
+
+function afterLogin() {
+  bindAppEvents();
+  bindSetupEvents();
+  bindResumeEvents();
+
+  const saved = loadState();
+  if (saved && saved.customer && saved.customer.name) {
+    showResume(saved);
+  } else {
+    showSetup();
+  }
+}
+
+function isAuthed() {
+  try {
+    return localStorage.getItem(AUTH_KEY) === "1" || sessionStorage.getItem(AUTH_KEY) === "1";
+  } catch(e) { return false; }
+}
+
+function init() {
+  bindLoginEvents();
+  if (isAuthed()) {
+    document.getElementById("loginOverlay").classList.add("hidden");
+    afterLogin();
+  } else {
+    document.getElementById("loginPassword").focus();
+  }
+}
+
+// Boot
+document.addEventListener("DOMContentLoaded", init);
+
+// Keyboard: ESC to close objection panel
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    const panel = document.getElementById("objectionPanel");
+    if (panel && panel.classList.contains("open")) closeObjectionPanel();
+  }
+});
+
+// Expose for inline onclick handlers
+window.goTo = goTo;
+window.openObjection = openObjection;
+window.copyBankDetails = copyBankDetails;
+</script>
+
+</body>
+</html>
