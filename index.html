@@ -2048,83 +2048,79 @@ const OBJECTION_CATEGORIES = [
    ============================================================= */
 /*
   Each template:
-   - id: "T1" ... "T12"
+   - id: "A1", "A2", "BOOKING", "B1" ... "B16"
    - title: human-readable name
    - when: when to send
    - attach: attach instructions (rendered as a note)
-   - content: the message body (single version), OR
-   - versions: array of { label, content } for templates with multiple versions (T4)
+   - content: the message body (single version)
 
   Placeholders inside content:
-   - [Name]      — customer first name (auto)
-   - [Rep Name]  — rep's name from login (auto)
-   - [number]    — rep's phone from login (auto)
+   - [Name]      — customer first name (auto-filled from setup)
+   - [Rep Name]  — rep's name from login (auto-filled)
    - Sir/Ma'am   — swapped based on gender selector
-   - {{groupTotalLine}} — inserted when pax > 1 (T1, T3, T6)
-   - [day], [time], [paste payment link], [paste Google reviews link] — rep fills after paste
+   - {{flight}}  — per-person flight price (auto)
+   - {{grandEB}} — per-person early-bird grand total (auto)
+   - {{groupTotalLine}} — injected when pax > 1 (A1, BOOKING, B4, B5)
+   - [day], [time], [paste payment link], [X] seats — rep fills manually after paste
 */
 const WHATSAPP_TEMPLATES = [
+  /* ===== SECTION A: Main flow outcomes ===== */
   {
-    id: "T1",
-    title: "Standard Callback Confirmation",
-    when: "After any call where the customer agreed to a specific callback day and time.",
-    attach: "Attach the Bhutan Itinerary PDF and 2 testimonial video files. For non-Bangalore customers, update the flight and grand total lines using ops-confirmed price.",
-    content: `Namaste [Name] Sir/Ma'am,
+    id: "A1",
+    title: "Callback Scheduled",
+    when: "Customer is interested — callback date and time agreed. Use on the Scheduled Callback close screen.",
+    attach: "Attach the Bhutan Itinerary PDF. Replace [day] and [time] with the callback slot.",
+    content: `Hello [Name] Sir/Ma'am,
 
-Thank you for your time on the call. As discussed, here are the details for our Bhutan senior group tour:
+Thank you for speaking with me. Here are the complete details for our *Bhutan senior group tour — 7 May 2026.*
 
 📎 [Attach Itinerary PDF]
-🎥 [Attach 2 testimonial videos]
 
-✅ *Trip Highlights*
-8 days / 7 nights — Thimphu, Punakha, Paro
-Departure: 7 May 2026
-Land package (early bird): ₹72,000 per person
-Flights booked by us: {{flight}} per person
-Grand total: {{grandEB}} per person (all-inclusive){{groupTotalLine}}
+Here are two short videos from our recent trips — real seniors sharing their experience:
 
-✅ *Complimentary Experiences (worth ₹11,000 per person)*
-Traditional Bhutanese hot stone bath — ₹3,500 per person
-Bhutanese farmhouse experience — ₹2,500 per person
+🎥 https://youtube.com/shorts/yBUXxrJn2DE?feature=share
 
-I will call you on [day] at [time] as we discussed. Please go through the details before then. If you have any questions, just reply here.
+🎥 https://youtu.be/0yAEaf_YRpw
 
-[Rep Name]
-ElderGo Senior Tours
-📞 [number]`
+I will call you on *[day]* at *[time]* as we discussed. If that does not work, just reply here.{{groupTotalLine}}
+
+*[Rep Name]*
+*ElderGo Senior Tours*
+📞 +91 90368 62200`
   },
+
   {
-    id: "T2",
-    title: "Standard WJFT (Will Join Future Trip)",
-    when: "Customer is not booking this trip but is open to future trips. Add them to the WhatsApp community.",
-    attach: "Attach 1 testimonial video. Then add the customer to the ElderGo WhatsApp community broadcast list. Mark WJFT in CRM.",
-    content: `Namaste [Name] Sir/Ma'am,
+    id: "A2",
+    title: "WJFT — Will Join Future Trip",
+    when: "Customer is interested but dates / destination don't work. Add to WhatsApp community.",
+    attach: "No PDF attachment needed. After sending, add the customer to the ElderGo WhatsApp community.",
+    content: `Hello [Name] Sir/Ma'am,
 
-Thank you for our conversation today. I understand this trip may not be the right fit for now.
+Thank you for your time today. I understand the timing is not right for this trip.
 
-We run senior group tours every month to different destinations — Bhutan, Bali, Vietnam, Sri Lanka, Dubai, and more. Whenever something matches what you are looking for, I will personally call you.
+We have trips running almost every month — Bali, Vietnam, Nepal, Sri Lanka, and more.
 
-Here is a short video so you know the kind of experience we create:
-🎥 [Attach 1 testimonial video]
+Here is a short video from one of our recent trips:
 
-Adding you to our WhatsApp community for upcoming trips. You can leave anytime. No spam.
+🎥 https://youtube.com/shorts/yBUXxrJn2DE?feature=share
 
-Take care!
+I will personally call you when we announce a trip that matches your preference. Adding you to our WhatsApp community for updates.
 
-[Rep Name]
-ElderGo Senior Tours
-📞 [number]`
+*[Rep Name]*
+*ElderGo Senior Tours*
+📞 +91 90368 62200`
   },
+
   {
-    id: "T3",
+    id: "BOOKING",
     title: "Booking Confirmation + Payment Link",
     when: "Customer said yes on the call. Send within 5 minutes — do not lose momentum.",
-    attach: "Replace [paste payment link] with the actual Cashfree link before sending. Bank account details are literal and must not be changed. Never send this template with a personal account.",
-    content: `Namaste [Name] Sir/Ma'am,
+    attach: "Replace [paste payment link] with the actual Cashfree link before sending. Bank details are literal — do not change. Never send this template with a personal account.",
+    content: `Hello [Name] Sir/Ma'am,
 
-Wonderful! Welcome to the ElderGo family. 🎉
+Wonderful! Welcome to the *ElderGo family.* 🎉
 
-To confirm your seat for the Bhutan trip on 7 May 2026, please make the booking advance:
+To confirm your seat for the *Bhutan trip on 7 May 2026,* please make the booking advance:
 
 ✅ *Booking Advance: ₹10,000 per person*{{groupTotalLine}}
 
@@ -2133,329 +2129,461 @@ You can pay via:
 🔗 *Payment Link:* [paste payment link]
 
 🏦 *Or Bank Transfer:*
-    Account Name: Eldaura Senior Adventures Private Limited
+    Account Name: *Eldaura Senior Adventures Private Limited*
     Bank: Axis Bank — Corporate Current Account
-    Account Number: 925020003767362
-    IFSC: UTIB0000694
+    A/C: *925020003767362*
+    IFSC: *UTIB0000694*
 
 Please share the payment screenshot here once done.
 
-After your advance, the rest will be split into 3 easy installments — the last installment is about 21 days before the trip.
+After your advance, the rest will be split into *3 easy installments* — the last installment is about 21 days before the trip.
 
 After payment confirmation, I will send:
 📎 Booking confirmation
-📎 Detailed packing list
-📎 Documents needed from your side (Voter ID is enough — no passport needed for Bhutan)
+📎 Packing list
+📎 Documents needed (Voter ID is enough — no passport needed for Bhutan)
 📎 Day-by-day plan
 
 Any questions, just reply here.
 
-[Rep Name]
-ElderGo Senior Tours
-📞 [number]`
+*[Rep Name]*
+*ElderGo Senior Tours*
+📞 +91 90368 62200`
   },
+
+  /* ===== SECTION B: Objection follow-ups ===== */
+
   {
-    id: "T4",
-    title: "Busy / Call Back Later",
-    when: "Customer was genuinely busy and asked you to call later, OR said \"do not call again.\" Pick ONE version to send.",
-    attach: "Use Version A if customer scheduled a specific callback. Use Version B if customer said do not call again. Send only ONE version, not both. Mark Cold in CRM (Version B) or Scheduled Callback (Version A).",
-    versions: [
-      {
-        label: "Version A — Callback scheduled",
-        content: `Namaste [Name] Sir/Ma'am,
+    id: "B1",
+    title: "Not the Right Time — Callback Scheduled",
+    when: "Objection #1 — customer was busy, callback agreed. Use when a specific day and time is confirmed.",
+    attach: "Attach the Bhutan Itinerary PDF. Replace [day] and [time] with the agreed callback slot.",
+    content: `Hello [Name] Sir/Ma'am,
 
-This is [Rep Name] from ElderGo Senior Tours, Bangalore.
+This is *[Rep Name]* from *ElderGo Senior Tours, Bangalore.*
 
-Sorry I caught you at a busy time. I am sharing our Bhutan trip details for whenever you are free.
+Sorry I caught you at a busy time. Here are our Bhutan trip details for whenever you are free.
 
 📎 [Attach Itinerary PDF]
 
-I will call you on [day] at [time] as we discussed. If that does not work, just reply here.
+I will call you on *[day]* at *[time]* as we discussed. If that does not work, just reply here.
 
-[Rep Name]
-ElderGo Senior Tours
-📞 [number]`
-      },
-      {
-        label: "Version B — \"Do not call again\"",
-        content: `Namaste [Name] Sir/Ma'am,
+*[Rep Name]*
+*ElderGo Senior Tours*
+📞 +91 90368 62200`
+  },
 
-This is [Rep Name] from ElderGo Senior Tours, Bangalore.
+  {
+    id: "B2",
+    title: "Not the Right Time — Don't Call Again",
+    when: "Objection #1 — customer said don't call again. Leave the door open, no follow-ups.",
+    attach: "Attach the Bhutan Itinerary PDF. Mark Cold in CRM. No follow-up calls.",
+    content: `Hello [Name] Sir/Ma'am,
 
-I am sharing our Bhutan senior group tour details — just in case you want to look at it sometime.
+This is *[Rep Name]* from *ElderGo Senior Tours, Bangalore.*
+
+I am sharing our *Bhutan senior group tour* details — just in case you want to look at it sometime.
 
 📎 [Attach Itinerary PDF]
-🎥 [Attach 1 testimonial video]
 
-No calls from our side. If you want to know more, just reply here or call us at [number].
+🎥 https://youtube.com/shorts/yBUXxrJn2DE?feature=share
+
+No calls from our side. If you want to know more, just reply here or call us at *+91 90368 62200.*
 
 Thank you!`
-      }
-    ]
   },
+
   {
-    id: "T5",
-    title: "Not Interested (Soft Exit)",
-    when: "Customer said \"not interested\" with no specific reason. Soft exit — keep the door open.",
-    attach: "Attach 1 testimonial video. Mark WJFT or Lost in CRM based on tone of the call. Add to drip sequence.",
-    content: `Namaste [Name] Sir/Ma'am,
+    id: "B3",
+    title: "Not Interested (No Reason)",
+    when: "Objection #2 — customer said not interested with no specific reason. Soft exit.",
+    attach: "Mark WJFT or Lost in CRM based on tone. Add to drip sequence.",
+    content: `Hello [Name] Sir/Ma'am,
 
-This is [Rep Name] from ElderGo Senior Tours.
+This is *[Rep Name]* from *ElderGo Senior Tours.*
 
-I understand this may not be the right time. Here is a short video from our recent Bhutan trip — real seniors sharing their experience.
+I understand this may not be the right time. Here is a short video from our recent trip — real seniors sharing their experience:
 
-🎥 [Attach 1 testimonial video]
+🎥 https://youtube.com/shorts/yBUXxrJn2DE?feature=share
 
-If you ever plan a trip, just reply here anytime. No follow-up calls from our side.
+If you ever plan a trip, just reply here anytime.
 
-Thank you!
-
-[Rep Name]
-ElderGo Senior Tours`
+Thank you!`
   },
-  {
-    id: "T6",
-    title: "Family Discussion (FORWARDABLE)",
-    when: "Customer wants to discuss with family/children. Designed to be forwarded to family WhatsApp group — written for the family to read.",
-    attach: "Attach 1–2 testimonial videos (ideally featuring families/couples). Attach Bhutan Itinerary PDF. Tell the customer verbally: \"Feel free to forward this directly to your family group.\" For non-Bangalore customers, update flight and grand total lines.",
-    content: `Namaste [Name] Sir/Ma'am,
 
-Thank you for your interest in our Bhutan senior group tour. Here are the details you can share with your family:
+  {
+    id: "B4",
+    title: "Discuss with Family / Children (Forwardable)",
+    when: "Objection #3 — customer wants to check with children. Designed to be forwarded to family WhatsApp group.",
+    attach: "Attach the Bhutan Itinerary PDF. Tell the customer verbally: \"Feel free to forward this to your family group.\"",
+    content: `Hello [Name] Sir/Ma'am,
+
+Thank you for your interest in our *Bhutan senior group tour.* Here are details you can share with your family:
 
 ✅ *About ElderGo*
 Senior-only group tours. 15-20 travelers per group.
-15+ tours completed to 7 countries in the last year.
+15+ tours to 7 countries in the last year.
 7 out of 10 travelers come back for another trip.
 Office: BHIVE Workspace, Kudlu Gate, Bangalore.
 GSTIN: 32AAICE5592N1Z5
 Website: www.eldergo.in
 
 ✅ *Bhutan Trip — 7 May 2026*
-8 days / 7 nights — Thimphu, Punakha, Paro
-Land package (early bird): ₹72,000 per person
-Flights booked by us: {{flight}} per person
-Grand total: {{grandEB}} per person (all-inclusive){{groupTotalLine}}
-
-✅ *Complimentary Experiences (worth ₹11,000 per person)*
-Traditional Bhutanese hot stone bath — ₹3,500 per person
-Bhutanese farmhouse experience — ₹2,500 per person
+8 days / 7 nights | All-inclusive
+Early bird: *₹72,000 per person* (land package)
+Round-trip flight: *{{flight}} per person*
+Grand total: *{{grandEB}} per person*{{groupTotalLine}}
 
 ✅ *Safety*
-First-aid trained tour manager from India on every trip.
-Small group (15-20 seniors, 55+ only).
+Tour manager from India on every trip.
+First-aid trained with medical kit.
+Small group (15-20 seniors only).
 4-star and premium hotels. All meals included.
-
-✅ *Easy Payment*
-Booking advance: ₹10,000 per person.
-Rest in 3 easy installments. Last one 21 days before trip.
 
 ✅ *Cancellation*
 100% refund if cancelled 30+ days before trip.
 
-✅ *Passport*
-Not needed for Bhutan — Voter ID is enough.
+✅ *Google Reviews*
+https://share.google/SUknAA0DY3B27fJEe
 
 ✅ *What other families say*
-🎥 [Attach 1-2 testimonial videos]
+🎥 https://youtube.com/shorts/yBUXxrJn2DE?feature=share
+
+🎥 https://youtube.com/shorts/vRUaWyCvZaI?feature=share
 
 📎 [Attach Itinerary PDF]
 
-If your family has any questions, they can call me directly at [number].
+If your family has any questions, they can call me directly at *+91 90368 62200.*
 
-[Rep Name]
-ElderGo Senior Tours`
+*[Rep Name]*
+*ElderGo Senior Tours*`
   },
+
   {
-    id: "T7",
-    title: "Price Breakdown (Inclusion Detail)",
-    when: "Customer felt the price was too high. Use for Type A (sticker shock) and Type B (comparison shock). For Type C (cannot afford), send a custom domestic-trip message instead.",
-    attach: "Attach Bhutan Itinerary PDF. The per-day calculation does the heavy lifting. For non-Bangalore customers, update flight and grand total lines.",
-    content: `Namaste [Name] Sir/Ma'am,
+    id: "B5",
+    title: "Discuss with Spouse",
+    when: "Objection #4 — customer needs to check with wife/husband.",
+    attach: "Attach the Bhutan Itinerary PDF. If possible, schedule a callback when both partners are available.",
+    content: `Hello [Name] Sir/Ma'am,
 
-Here is a quick breakdown of what is covered in the ₹72,000 per person land package:
-
-🏨 7 nights in 4-star and premium 3-star hotels
-🍽️ Breakfast, lunch, dinner — all 8 days
-🚌 AC transport throughout the trip
-👨‍✈️ First-aid trained tour manager from India (with you Day 1 to last day)
-🎫 All entry tickets and sightseeing
-💰 Bhutan SDF fee (₹6,000 per person — mandatory for every visitor)
-📱 Bhutanese SIM card
-🛁 Hot stone bath (worth ₹3,500 per person — complimentary)
-🏡 Farmhouse experience (worth ₹2,500 per person — complimentary)
-🌐 GST and service charges included
-
-That works out to about ₹9,600 per person per day for absolutely everything.
-
-Flights (round-trip) are an additional {{flight}} per person, booked by us.
-
-Grand total: {{grandEB}} per person all-inclusive (early bird).
-
-✅ *Easy Payment*
-Booking advance: only ₹10,000 per person.
-Rest in 3 easy installments before the trip.
+Here are the details so you and your [wife/husband] can go through them together:
 
 📎 [Attach Itinerary PDF]
 
-Any questions, just reply here.
+Here are two videos — one from a couple who traveled with us, and one about the Bhutan trip:
 
-[Rep Name]
-ElderGo Senior Tours`
+🎥 https://youtube.com/shorts/G9W7ho89IOc?feature=share
+
+🎥 https://youtu.be/0yAEaf_YRpw
+
+Early bird: *₹72,000 per person* (land package).
+For both of you: about *₹19,000 per day for two people* — everything included.{{groupTotalLine}}
+
+I will call you on *[day]* at *[time].* If both of you are available, I can answer questions together.
+
+*[Rep Name]*
+*ElderGo Senior Tours*
+📞 +91 90368 62200`
   },
+
   {
-    id: "T8",
-    title: "Group Anxiety (Trust Builder)",
-    when: "Customer was uncomfortable about traveling with strangers. Lead with a video showing the actual group from a recent trip.",
-    attach: "Most important: attach a group video where multiple seniors are visible enjoying together. Not a single talking-head testimonial. The visual of an actual group is what kills group anxiety.",
-    content: `Namaste [Name] Sir/Ma'am,
+    id: "B6",
+    title: "Price Too High",
+    when: "Objection #5 — customer says too expensive. Breaks down the value per-day.",
+    attach: "Attach the Bhutan Itinerary PDF. Do not offer a discount.",
+    content: `Hello [Name] Sir/Ma'am,
 
-Here is a short video from our recent Bhutan trip — you can see the kind of people who travel with us.
+Here is a quick breakdown of what is covered in the *₹72,000 per person* early bird price:
 
-🎥 [Attach group testimonial video showing the actual group]
+🏨 7 nights in premium hotels
+🍽️ Breakfast, lunch, dinner — all days
+🚌 AC Toyota Coaster bus throughout
+👨‍✈️ Tour manager from India
+🎫 All entry tickets
+💰 Bhutan SDF fee (₹6,000 per person)
+🛁 Hot stone bath (worth *₹3,500 per person*)
+🏡 Farmhouse experience (worth *₹2,500 per person*)
 
-✅ *Our group profile*
-- Only 15 to 20 seniors per trip
-- Everyone is 55 and above (no youngsters, no children)
-- Mostly retired professionals — bankers, defence, doctors, teachers
-- Same age, same pace, similar interests
+Booking advance: only *₹10,000 per person.*
+Rest in 3 easy installments.
 
-✅ *Solo travelers welcome*
-30% of our travelers come alone — and they usually tell us by Day 2, the group felt like old friends. Many stay in touch long after the trip ends.
+Here is what one of our travelers has to say:
+
+🎥 https://youtube.com/shorts/yBUXxrJn2DE?feature=share
 
 📎 [Attach Itinerary PDF]
 
-[Rep Name]
-ElderGo Senior Tours`
+*[Rep Name]*
+*ElderGo Senior Tours*
+📞 +91 90368 62200`
   },
+
   {
-    id: "T9",
+    id: "B7",
+    title: "Group Anxiety / Strangers",
+    when: "Objection #6 — customer doesn't want to travel with strangers.",
+    attach: "Attach the Bhutan Itinerary PDF. The Jai Dev solo video and the group-fun video together are the strongest reassurance.",
+    content: `Hello [Name] Sir/Ma'am,
+
+I understand your concern about group travel.
+
+Here are two short videos:
+
+This gentleman, *Jai Dev, is 77 years old.* He traveled alone with us — no family member. See what he says:
+
+🎥 https://youtube.com/shorts/AcXV0xlbiIo?feature=share
+
+And here is what our group trips actually look like:
+
+🎥 https://youtube.com/shorts/zdcVBpwY3BU?feature=share
+
+Our groups are always *small (15-20 seniors only).* Many travelers come alone and make great friends.
+
+📎 [Attach Itinerary PDF]
+
+*[Rep Name]*
+*ElderGo Senior Tours*
+📞 +91 90368 62200`
+  },
+
+  {
+    id: "B8",
+    title: "Travel with Friends / Friend Hasn't Confirmed",
+    when: "Objection #7 or #14 — customer is waiting for friends to confirm before booking.",
+    attach: "Attach the Bhutan Itinerary PDF. Replace [X] with current seat availability. Replace [day] with follow-up day.",
+    content: `Hello [Name] Sir/Ma'am,
+
+Here are the Bhutan trip details you can share with your friends:
+
+📎 [Attach Itinerary PDF]
+
+🎥 https://youtube.com/shorts/yBUXxrJn2DE?feature=share
+
+The group is limited to *20 seniors.* Right now *[X] seats* are available. If your friends are interested, they can call me directly at *+91 90368 62200.*
+
+I will follow up with you on *[day]* to check.
+
+*[Rep Name]*
+*ElderGo Senior Tours*`
+  },
+
+  {
+    id: "B9",
     title: "Health Concerns — Manageable",
-    when: "Customer has a manageable condition: controlled BP, controlled diabetes, mild knee pain, age-related slowness. NOT for serious conditions.",
-    attach: "Attach Bhutan Itinerary PDF. NEVER promise medical safety. Always end with \"check with your doctor.\"",
-    content: `Namaste [Name] Sir/Ma'am,
+    when: "Objection #8 — knee pain, BP, diabetes etc. but manageable with doctor's clearance. Also used for food-restriction concerns (#15).",
+    attach: "Attach the Bhutan Itinerary PDF. NEVER promise medical safety. Always end with \"check with your doctor.\"",
+    content: `Hello [Name] Sir/Ma'am,
 
-Thank you for sharing about your health. Our trips are designed for senior comfort:
+Thank you for sharing your health concern. Our trips are designed for *senior comfort:*
 
-✅ *Comfort throughout*
-- No heavy climbing or long walks
-- Comfortable AC bus, with regular stops
-- 4-star hotels (rest is taken care of)
-- Slow, comfortable pace
+✅ No heavy climbing or long walks
+✅ Comfortable AC bus with regular stops
+✅ Tour manager is first-aid trained
+✅ Medical kit on every trip
+✅ Dietary adjustments available
 
-✅ *Medical support*
-- Tour manager is first-aid trained
-- Medical kit on every trip
-- Tour manager available 24/7 throughout the trip
+Many travelers with similar health concerns have completed this trip comfortably.
 
-✅ *Dietary needs*
-- All meals can be adjusted (vegetarian, Jain, diabetic, low-salt)
-- Just let us know your preferences before the trip
+🎥 https://youtube.com/shorts/CZXybUXJdJU?feature=share
 
-Many of our travelers with similar concerns have completed this trip comfortably — including travelers aged 75+ with knee replacements.
-
-But please do check with your doctor once before booking.
+Please check with your doctor once. If they say you are fit to travel, we will take full care.
 
 📎 [Attach Itinerary PDF]
 
-[Rep Name]
-ElderGo Senior Tours`
+*[Rep Name]*
+*ElderGo Senior Tours*
+📞 +91 90368 62200`
   },
+
   {
-    id: "T10",
+    id: "B10",
     title: "Health Concerns — Serious",
-    when: "Customer has a serious condition: recent surgery, doctor advised against travel, uncontrolled cardiac, oxygen dependency. They should NOT travel on this trip.",
-    attach: "Do NOT attach trip details. The point of this message is genuine care, not selling. Mark WJFT in CRM with health note. NO follow-up calls until customer initiates.",
-    content: `Namaste [Name] Sir/Ma'am,
+    when: "Objection #8 — serious condition, doctor advised against travel. Protect the customer and ElderGo.",
+    attach: "Do NOT attach trip details. Mark WJFT in CRM with health note. No follow-up calls until the customer initiates.",
+    content: `Hello [Name] Sir/Ma'am,
 
-Your health comes first.
+*Your health comes first* — always.
 
-If your doctor has advised against travel right now, please wait until you fully recover. Travel will always be there — your health should not be compromised.
+We run trips every month to different destinations. Whenever your doctor gives the go-ahead, just call me and I will book you on the next trip.
 
-We run senior group tours every month to different destinations. Whenever your doctor gives the go-ahead, please call me, and I will personally book you on the next available trip that suits you.
+I am adding you to our travelers' WhatsApp community so you can see upcoming trips and plan when ready.
 
-I am adding you to our WhatsApp community so you can see our upcoming trips. No follow-up calls from our side until you are ready.
+Take care, Sir/Ma'am. Looking forward to traveling with you soon.
 
-Take care, Sir/Ma'am.
-
-[Rep Name]
-ElderGo Senior Tours`
+*[Rep Name]*
+*ElderGo Senior Tours*
+📞 +91 90368 62200`
   },
+
   {
-    id: "T11",
-    title: "Trust / Scam Verification (FULL PROOF STACK)",
-    when: "Customer asked \"are you real?\", \"is this genuine?\", or expressed scam-fear. The most thorough message in the playbook.",
-    attach: "Replace [paste Google reviews link] with the actual URL. Attach 2 testimonial videos and the Bhutan Itinerary PDF. Bank account details are literal. Do NOT skip any element.",
-    content: `Namaste [Name] Sir/Ma'am,
+    id: "B11",
+    title: "No Passport (Bhutan)",
+    when: "Objection #9 — customer says no passport. Positive signal.",
+    attach: "Attach the Bhutan Itinerary PDF. For other destinations, guidance is different — this template is Bhutan-specific.",
+    content: `Hello [Name] Sir/Ma'am,
 
-Thank you for asking — I am glad you did. Here is everything for verification:
+Good news — for Bhutan, Indian citizens *do not need a passport.* You can travel with your *Voter ID.*
 
-✅ *Company Registration*
+One less thing to worry about!
+
+📎 [Attach Itinerary PDF]
+
+Let me know if you have any other questions.
+
+*[Rep Name]*
+*ElderGo Senior Tours*
+📞 +91 90368 62200`
+  },
+
+  {
+    id: "B12",
+    title: "Trust / Is This Real (Full Proof Stack)",
+    when: "Objection #10 — customer asks if company is genuine. Also used for #12 (local company). Do NOT skip any element.",
+    attach: "Attach the Bhutan Itinerary PDF. Bank account details are literal — do not change.",
+    content: `Hello [Name] Sir/Ma'am,
+
+I understand your concern. Here is everything for your verification:
+
+✅ *Company*
 Eldaura Senior Adventures Private Limited
-Registered Office: BHIVE Workspace, Kudlu Gate, Bangalore
-GSTIN: 32AAICE5592N1Z5
+Office: BHIVE Workspace, AKR Tech Park, Kudlu Gate, Bangalore - 560068
+GST: 32AAICE5592N1Z5
 Website: www.eldergo.in
-(You can verify the GST number on the official Government of India GST portal: gst.gov.in)
 
-✅ *Bank Details for Payments*
-Bank: Axis Bank — Corporate Current Account
-Account Name: *Eldaura Senior Adventures Private Limited*
-Account Number: 925020003767362
-IFSC: UTIB0000694
-(Note: We never ask for payment to a personal account. The account name will always be the company name, never an individual.)
+✅ *Bank (for verification)*
+Axis Bank — Corporate Current Account
+Account: Eldaura Senior Adventures Pvt Ltd
+A/C: 925020003767362 | IFSC: UTIB0000694
+(Company account — never personal)
 
-✅ *Online Reviews*
-Check our Google reviews here: [paste Google reviews link]
+✅ *Google Reviews*
+https://share.google/SUknAA0DY3B27fJEe
 
-✅ *Real Travelers*
-🎥 [Attach Testimonial Video 1]
-🎥 [Attach Testimonial Video 2]
+✅ *What our travelers say*
+🎥 https://youtube.com/shorts/yBUXxrJn2DE?feature=share
 
-✅ *Office Visit*
-You are welcome to visit our office anytime, Monday to Saturday, 10 AM to 6 PM. We can also do a WhatsApp video call so you can see our office without traveling.
+🎥 https://youtube.com/shorts/vRUaWyCvZaI?feature=share
 
 📎 [Attach Itinerary PDF]
 
-Please call me directly at [number] if you have any questions — or if your family wants to verify, they can call me too.
-
-[Rep Name]
-ElderGo Senior Tours`
+*[Rep Name]*
+*ElderGo Senior Tours*
+📞 +91 90368 62200`
   },
-  {
-    id: "T12",
-    title: "I Will Call You Back — Last Chance",
-    when: "Customer refused your callback offer. This WhatsApp is your only remaining shot at conversion — make it strong.",
-    attach: "Attach the Bhutan Itinerary PDF and 2 testimonial videos. Mark Cold in CRM. Wait 15 days minimum before any follow-up call. Add to WhatsApp drip sequence.",
-    content: `Namaste [Name] Sir/Ma'am,
 
-Here are the complete details for our Bhutan senior group tour:
+  {
+    id: "B13",
+    title: "Want to Visit Office",
+    when: "Objection #11 — customer wants to see the office. Bangalore customers can visit; others get a video call option.",
+    attach: "No attachment. Offer a WhatsApp video call for non-Bangalore customers.",
+    content: `Hello [Name] Sir/Ma'am,
+
+Here are our office details:
+
+📍 *Office Address*
+BHIVE Workspace, Block B, AKR Tech Park
+7th Mile Hosur Road, Kudlu Gate
+Bangalore - 560068
+
+🕐 *Visiting hours:* Mon-Sat, 10 AM - 6 PM
+
+✅ GST: 32AAICE5592N1Z5
+✅ Website: www.eldergo.in
+✅ Google Reviews: https://share.google/SUknAA0DY3B27fJEe
+
+If you are not in Bangalore, we can also do a short *WhatsApp video call* so you can see our office. Just let me know.
+
+*[Rep Name]*
+*ElderGo Senior Tours*
+📞 +91 90368 62200`
+  },
+
+  {
+    id: "B14",
+    title: "Children Not Allowing (Message to the Child)",
+    when: "Objection #17 — you got the child's number. This message is for the child, not the parent.",
+    attach: "No attachment. Send to the child's number, not the parent's.",
+    content: `Hello,
+
+This is *[Rep Name]* from *ElderGo Senior Tours, Bangalore.* Your [mother/father] is interested in our Bhutan senior group tour. I understand you have some concerns.
+
+✅ *Safety*
+- Tour manager from India travels with the group
+- First-aid trained with medical kit
+- 24/7 contact throughout the trip
+- Small group of 15-20 verified seniors only
+
+✅ *Company*
+- Eldaura Senior Adventures Pvt Ltd
+- BHIVE Workspace, Kudlu Gate, Bangalore
+- GST: 32AAICE5592N1Z5
+- www.eldergo.in
+
+✅ *Cancellation*
+- 100% refund if cancelled 30+ days before trip
+
+✅ *Google Reviews*
+https://share.google/SUknAA0DY3B27fJEe
+
+Here is what another traveler's daughter said:
+
+🎥 https://youtube.com/shorts/vRUaWyCvZaI?feature=share
+
+Please call me at *+91 90368 62200* with any questions. Happy to answer everything.
+
+*[Rep Name]*
+*ElderGo Senior Tours*`
+  },
+
+  {
+    id: "B15",
+    title: "Already Booked Elsewhere",
+    when: "Objection #20 — customer already booked with another company. Stay classy, keep them warm.",
+    attach: "No attachment. Mark as future prospect in CRM. Add to community.",
+    content: `Hello [Name] Sir/Ma'am,
+
+Wonderful to hear you are going to Bhutan! I hope you have an amazing trip.
+
+I am adding you to our travelers' WhatsApp community. We share upcoming trips there.
+
+Here is what our senior-only group trips look like:
+
+🎥 https://youtube.com/shorts/zdcVBpwY3BU?feature=share
+
+After your trip, if you want to experience a *senior-only group tour* with us, we would love to have you. Trips every month to Bali, Vietnam, Nepal, and more.
+
+Have a safe journey!
+
+*[Rep Name]*
+*ElderGo Senior Tours*
+📞 +91 90368 62200`
+  },
+
+  {
+    id: "B16",
+    title: "I'll Call You Back (Strong WhatsApp — only chance)",
+    when: "Objection #21 — customer refused callback. This WhatsApp is your only shot at future conversion.",
+    attach: "Attach the Bhutan Itinerary PDF. Mark Cold. Wait 15 days minimum before follow-up.",
+    content: `Hello [Name] Sir/Ma'am,
+
+Here are the complete details for our *Bhutan senior group tour:*
 
 📎 [Attach Itinerary PDF]
-🎥 [Attach Testimonial Video 1]
-🎥 [Attach Testimonial Video 2]
 
-✅ *Trip Summary*
+🎥 https://youtube.com/shorts/yBUXxrJn2DE?feature=share
+
+🎥 https://youtu.be/0yAEaf_YRpw
+
 📍 8 days, 7 nights — Thimphu, Punakha, Paro
-📅 Departure: 7 May 2026
-💰 Land package (early bird): ₹72,000 per person
-✈️ Flights: {{flight}} per person
-💯 Grand total: {{grandEB}} per person (all-inclusive)
-🎁 Complimentary: hot stone bath + farmhouse experience (worth ₹11,000)
-
-✅ *Why Seniors Pick ElderGo*
-🏨 4-star hotels, all meals included
-🚌 AC transport throughout, gentle pace
-👨‍✈️ First-aid trained tour manager from India
+💰 *₹72,000 per person* (early bird) + flights
+🏨 Premium hotels, all meals included
+👨‍✈️ Tour manager from India on every trip
 🔁 7 out of 10 travelers come back for more
-🛂 No passport needed — Voter ID is enough
-💳 Easy payment: ₹10,000 advance + 3 installments
 
-✅ *Booking Safety*
-💯 100% refund if cancelled 30+ days before trip
+No pressure. Whenever ready, reply here or call *+91 90368 62200.*
 
-No pressure from our side. Whenever you feel like talking, just reply here or call [number]. We are always available.
-
-[Rep Name]
-ElderGo Senior Tours`
+*[Rep Name]*
+*ElderGo Senior Tours*`
   }
 ];
 
@@ -2463,29 +2591,30 @@ function getTemplate(id) { return WHATSAPP_TEMPLATES.find(t => t.id === id); }
 
 /* Map each of the 21 objections to the right template(s).
    Array = rep picks between multiple. null = no WhatsApp (verbal only).
+   Fallback: objections without a dedicated template in v3 reuse closest match.
 */
 const OBJECTION_TEMPLATE_MAP = {
-  1: ["T4"],        // Not the right time → Version A/B inside T4
-  2: ["T5"],        // Not interested
-  3: ["T6"],        // Family / children
-  4: ["T6"],        // Spouse
-  5: ["T7"],        // Too expensive
-  6: ["T8"],        // Group anxiety
-  7: ["T8"],        // Travel with friends
-  8: ["T9", "T10"], // Health — rep picks manageable vs serious
-  9: ["T1"],        // No passport → if callback scheduled
-  10: ["T11"],      // Trust
-  11: ["T11"],      // Visit office
-  12: ["T11"],      // Local company
-  13: ["T2"],       // Dates don't work
-  14: ["T1"],       // Friend hasn't confirmed
-  15: ["T9"],       // Food restrictions
-  16: null,         // Discount — NO TEMPLATE (verbal only)
-  17: ["T6"],       // Children not allowing
-  18: null,         // Cancellation — NO TEMPLATE (buying signal)
-  19: ["T2"],       // Want private
-  20: ["T2"],       // Already booked
-  21: ["T12"]       // I'll call you back
+  1: ["B1", "B2"],   // Not the right time - rep picks callback-version vs don't-call-version
+  2: ["B3"],         // Not interested
+  3: ["B4"],         // Family / children
+  4: ["B5"],         // Spouse
+  5: ["B6"],         // Too expensive
+  6: ["B7"],         // Group anxiety
+  7: ["B8"],         // Travel with friends
+  8: ["B9", "B10"],  // Health - rep picks manageable vs serious
+  9: ["B11"],        // No passport
+  10: ["B12"],       // Trust
+  11: ["B13"],       // Visit office
+  12: ["B12"],       // Local company - reuse trust template
+  13: ["A2"],        // Dates don't work - WJFT fallback
+  14: ["B8"],        // Friend hasn't confirmed - reuse B8 (same situation)
+  15: ["B9"],        // Food restrictions - reuse B9 (same comfort messaging)
+  16: null,          // Discount - NO TEMPLATE (verbal only)
+  17: ["B14"],       // Children not allowing - message to child
+  18: null,          // Cancellation - NO TEMPLATE (buying signal)
+  19: ["A2"],        // Want private - WJFT fallback
+  20: ["B15"],       // Already booked
+  21: ["B16"]        // I'll call you back
 };
 
 // Attach template references to each objection object (keeps old .whatsapp field untouched but unused)
@@ -3017,7 +3146,7 @@ ${genderToggleBlockHtml()}
   <button class="btn btn-sm btn-secondary" style="margin-top: 10px;" onclick="copyBankDetails()">📋 Copy bank details</button>
 </div>
 
-${whatsappBlockHtml("T3")}
+${whatsappBlockHtml("BOOKING")}
 
 ${crmNoteBlockHtml()}
 `,
@@ -3042,7 +3171,7 @@ ${crmNoteBlockHtml()}
   <div class="say"><div class="say-content"><strong>I will send you the full day-by-day plan, pricing, and some videos on WhatsApp in the next 10 minutes. When is a good time to call you again — [suggest day] around [suggest time]?</strong></div></div>
 </div>
 
-${whatsappBlockHtml("T1")}
+${whatsappBlockHtml("A1")}
 
 ${crmNoteBlockHtml()}
 `,
@@ -3067,7 +3196,7 @@ ${crmNoteBlockHtml()}
   <div class="say"><div class="say-content"><strong>No problem, Sir/Ma'am. We have trips every month. I will add you to our WhatsApp community. When something suits you, I will call you personally.</strong></div></div>
 </div>
 
-${whatsappBlockHtml("T2")}
+${whatsappBlockHtml("A2")}
 
 ${crmNoteBlockHtml()}
 `,
@@ -3480,7 +3609,7 @@ function renderObjectionDetail(id) {
     <h4>WhatsApp follow-up</h4>
     <div class="no-template-note"><strong>No WhatsApp template — handle on the call itself.</strong><br>
     ${id === 16 ? "Discounts are verbal-only. Putting \"no discount\" in writing sounds harsh." : ""}
-    ${id === 18 ? "Cancellation is a buying signal. Close on the call. If it leads to a callback, use Template T1 with the policy summary added." : ""}
+    ${id === 18 ? "Cancellation is a buying signal. Close on the call. If it leads to a callback, use Template A1 with the policy summary added." : ""}
     </div>
   </div>`;
   } else if (obj.templateIds && obj.templateIds.length > 0) {
