@@ -459,17 +459,63 @@ h1,h2,h3,h4 { font-weight: 600; line-height: 1.3; }
   box-shadow: 0 0 0 2px rgba(45,90,140,.12);
 }
 .sb-totals { font-size: 13px; }
-.sb-totals .row {
-  display: flex; justify-content: space-between;
-  padding: 6px 0;
-  border-bottom: 1px dashed var(--line-soft);
+.sb-totals .tot-group-label {
+  font-size: 10px; font-weight: 700;
+  color: var(--ink-soft);
+  text-transform: uppercase; letter-spacing: .08em;
+  margin: 10px 0 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line-soft);
 }
-.sb-totals .row:last-child { border-bottom: none; }
-.sb-totals .row .lbl { color: var(--ink-muted); font-weight: 500; }
-.sb-totals .row .val { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.sb-totals .tot-group-label:first-of-type { margin-top: 0; }
+.sb-totals .row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 5px 0;
+  gap: 10px;
+}
+.sb-totals .row .lbl {
+  color: var(--ink-muted); font-weight: 500;
+  flex: 1 1 auto;
+  line-height: 1.3;
+}
+.sb-totals .row .val {
+  font-weight: 600; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.sb-totals .row .val .val-main {
+  display: block;
+}
+.sb-totals .row .val .val-hint {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+.sb-totals .row.emphasis {
+  background: #FFF7ED;
+  margin: 4px -8px;
+  padding: 8px 8px;
+  border-radius: var(--radius-sm);
+  border-bottom: none;
+}
 .sb-totals .row.emphasis .lbl { color: var(--primary); font-weight: 700; }
-.sb-totals .row.emphasis .val { color: var(--accent-dark); font-weight: 800; font-size: 15px; }
-.sb-totals .row.saved .val { color: var(--success); }
+.sb-totals .row.emphasis .val .val-main {
+  color: var(--accent-dark); font-weight: 800; font-size: 15px;
+}
+.sb-totals .row.emphasis .val .val-hint { color: #9A3412; }
+.sb-totals .row.emphasis.saved {
+  background: #F0FDF4;
+}
+.sb-totals .row.emphasis.saved .lbl { color: #14532D; }
+.sb-totals .row.emphasis.saved .val .val-main {
+  color: var(--success); font-weight: 800; font-size: 15px;
+}
+.sb-totals .row.emphasis.saved .val .val-hint { color: #15803D; }
+.sb-totals .row.saved:not(.emphasis) .val .val-main { color: var(--success); }
 .sb-cps { display: flex; flex-direction: column; gap: 4px; }
 .cp-item {
   display: flex; align-items: flex-start; gap: 8px;
@@ -1254,13 +1300,22 @@ h1,h2,h3,h4 { font-weight: 600; line-height: 1.3; }
 
       <div class="sb-section sb-totals">
         <h4>Totals</h4>
-        <div class="row"><span class="lbl">Land — regular</span><span class="val" id="tLandReg">—</span></div>
-        <div class="row"><span class="lbl">Grand total — regular</span><span class="val" id="tGrandReg">—</span></div>
-        <div class="row"><span class="lbl">Land — early bird</span><span class="val" id="tLandEB">—</span></div>
-        <div class="row emphasis"><span class="lbl">Grand total — EB</span><span class="val" id="tGrandEB">—</span></div>
-        <div class="row saved"><span class="lbl">EB savings</span><span class="val" id="tSavings">—</span></div>
-        <div class="row"><span class="lbl">Complimentary value</span><span class="val" id="tComp">—</span></div>
-        <div class="row emphasis saved"><span class="lbl">Total benefits</span><span class="val" id="tBenefits">—</span></div>
+
+        <div class="tot-group-label">Inputs</div>
+        <div class="row"><span class="lbl">Flight per person</span><span class="val" id="tFlight">—</span></div>
+
+        <div class="tot-group-label">Regular pricing</div>
+        <div class="row"><span class="lbl">Land package</span><span class="val" id="tLandReg">—</span></div>
+        <div class="row"><span class="lbl">Total (regular)</span><span class="val" id="tGrandReg">—</span></div>
+
+        <div class="tot-group-label">Early bird pricing</div>
+        <div class="row saved"><span class="lbl">Early bird savings</span><span class="val" id="tSavings">—</span></div>
+        <div class="row"><span class="lbl">Land package</span><span class="val" id="tLandEB">—</span></div>
+        <div class="row emphasis"><span class="lbl">Total (early bird)</span><span class="val" id="tGrandEB">—</span></div>
+
+        <div class="tot-group-label">Customer benefits</div>
+        <div class="row saved"><span class="lbl">Complimentary experiences</span><span class="val" id="tComp">—</span></div>
+        <div class="row emphasis saved"><span class="lbl">Total benefits <small style="font-weight:500;opacity:.75">(EB + comp.)</small></span><span class="val" id="tBenefits">—</span></div>
       </div>
 
       <div class="sb-section">
@@ -2069,20 +2124,39 @@ const WHATSAPP_TEMPLATES = [
     id: "A1",
     title: "Callback Scheduled",
     when: "Customer is interested — callback date and time agreed. Use on the Scheduled Callback close screen.",
-    attach: "Attach the Bhutan Itinerary PDF. Replace [day] and [time] with the callback slot.",
+    attach: "Both itinerary and pricing are hosted links — nothing to attach. Replace [day] and [time] with the callback slot.",
     content: `Hello [Name] Sir/Ma'am,
 
-Thank you for speaking with me. Here are the complete details for our *Bhutan senior group tour — 7 May 2026.*
+Thank you for speaking with me today. Here are the complete details for our *Bhutan senior group tour — 7 May 2026.*
 
-📎 [Attach Itinerary PDF]
+📎 *Itinerary*
+https://eldergo.my.canva.site/ref-bhutan-may-2026
 
-Here are two short videos from our recent trips — real seniors sharing their experience:
+💰 *Detailed Pricing*
+https://eldergo.my.canva.site/pricing-bhutan-may-2026
 
-🎥 https://youtube.com/shorts/yBUXxrJn2DE?feature=share
+✅ *Price Breakdown*
+Original land package: ₹77,000 per person
+Early bird offer: *- ₹5,000 per person*
+Land package (after early bird): *₹72,000 per person*
+Round-trip flight: *{{flight}} per person*
+*Grand total: {{grandEB}} per person* (all-inclusive){{groupTotalLine}}
+
+🎁 *Complimentary Experiences*
+Traditional Bhutanese hot stone bath — worth ₹3,500
+Bhutanese farmhouse experience — worth ₹2,500
+
+So in total, you are getting *benefits worth ₹11,000 per person* (₹5,000 early bird + ₹6,000 complimentary experiences).
+
+💳 *Easy Payment*
+Booking advance: only *₹10,000 per person*
+Rest in 3 easy installments — last one 21 days before trip
+
+Here is a short video from one of our recent travelers — *Eeshwar Sir* sharing his Bhutan experience:
 
 🎥 https://youtu.be/0yAEaf_YRpw
 
-I will call you on *[day]* at *[time]* as we discussed. If that does not work, just reply here.{{groupTotalLine}}
+I will call you on *[day]* at *[time]* as we discussed. Please go through the details before then. If you have any questions, just reply here.
 
 *[Rep Name]*
 *ElderGo Senior Tours*
@@ -3494,13 +3568,25 @@ function renderTotals() {
   const comp = TRIP.complimentaryTotalValue;
   const benefits = TRIP.totalBenefits;
 
-  document.getElementById("tLandReg").textContent = `${formatINR(landReg)} × ${pax} = ${formatINR(landReg * pax)}`;
-  document.getElementById("tGrandReg").textContent = `${formatINR(grandReg)} × ${pax} = ${formatINR(grandReg * pax)}`;
-  document.getElementById("tLandEB").textContent = `${formatINR(landEB)} × ${pax} = ${formatINR(landEB * pax)}`;
-  document.getElementById("tGrandEB").textContent = `${formatINR(grandEB)} × ${pax} = ${formatINR(grandEB * pax)}`;
-  document.getElementById("tSavings").textContent = `${formatINR(savings)} × ${pax} = ${formatINR(savings * pax)}`;
-  document.getElementById("tComp").textContent = `${formatINR(comp)} × ${pax} = ${formatINR(comp * pax)}`;
-  document.getElementById("tBenefits").textContent = `${formatINR(benefits)} × ${pax} = ${formatINR(benefits * pax)}`;
+  // Format value per Option B:
+  //   pax === 1 → just the main number
+  //   pax  > 1  → group total on top + "₹X per person" hint below
+  function formatVal(perPerson) {
+    const total = perPerson * pax;
+    if (pax === 1) {
+      return `<span class="val-main">${formatINR(total)}</span>`;
+    }
+    return `<span class="val-main">${formatINR(total)}</span><span class="val-hint">(${formatINR(perPerson)} per person)</span>`;
+  }
+
+  document.getElementById("tFlight").innerHTML    = formatVal(flight);
+  document.getElementById("tLandReg").innerHTML   = formatVal(landReg);
+  document.getElementById("tGrandReg").innerHTML  = formatVal(grandReg);
+  document.getElementById("tLandEB").innerHTML    = formatVal(landEB);
+  document.getElementById("tGrandEB").innerHTML   = formatVal(grandEB);
+  document.getElementById("tSavings").innerHTML   = `<span class="val-main">− ${formatINR(savings * pax)}</span>${pax > 1 ? `<span class="val-hint">(${formatINR(savings)} per person)</span>` : ""}`;
+  document.getElementById("tComp").innerHTML      = formatVal(comp);
+  document.getElementById("tBenefits").innerHTML  = formatVal(benefits);
 }
 
 function renderCheckpoints() {
